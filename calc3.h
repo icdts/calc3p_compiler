@@ -1,5 +1,7 @@
-typedef enum { typeIntCon, typeFloatCon, typeId, typeOpr } nodeEnum;
+#include <stdio.h>
+#include <stdlib.h>
 
+typedef enum { typeIntCon, typeFloatCon, typeIntId, typeFloatId, typeOpr } nodeEnum;
 
 typedef struct {
 	int type;
@@ -18,7 +20,14 @@ typedef struct {
 typedef struct {
     int i;                      /* subscript to ident array */
 	int defined;
-} idNodeType;
+	int type;
+} intIdNodeType;
+
+typedef struct {
+    int i;                      /* subscript to ident array */
+	int defined;
+	int type;
+} floatIdNodeType;
 
 /* operators */
 typedef struct {
@@ -35,9 +44,20 @@ typedef struct nodeTypeTag {
     union {
         integerConNodeType iCon;        /* integer constants */
 		floatConNodeType fCon;			/* float constants */
-        idNodeType id;          		/* identifiers */
+        intIdNodeType iId;          		/* identifiers */
+		floatIdNodeType fId;
         oprNodeType opr;        		/* operators */
     };
 } nodeType;
 
+struct type_stack {
+	int type;
+	struct type_stack * previous;
+};
+
+void push_type(int t);
+int pop_type();
+void printTypeStack();
+
 extern variable *sym[99];
+struct type_stack * top_of_stack;

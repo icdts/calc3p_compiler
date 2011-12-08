@@ -137,26 +137,44 @@ nodeType *id(int i) {
 	if( sym[i] == NULL )
 		yyerror("variable used before definition");
 
+	if( sym[i]->type == typeIntId ){ 
     /* allocate node */
-    nodeSize = SIZEOF_NODETYPE + sizeof(idNodeType);
+    	nodeSize = SIZEOF_NODETYPE + sizeof(intIdNodeType);
+	}else{
+    	nodeSize = SIZEOF_NODETYPE + sizeof(floatIdNodeType);
+	}
     if ((p = malloc(nodeSize)) == NULL)
         yyerror("out of memory");
 
     /* copy information */
-    p->type = typeId;
-    p->id.i = i;
+	//fprintf(stderr,"VAR %d has type %d",i,sym[i]->type);
+    p->type = sym[i]->type;
+	
+	if( p->type == typeIntId ){
+    	p->iId.i = i;
+	}else if( p->type == typeFloatId ){
+    	p->fId.i = i;
+		//fprintf(stderr,"Setting fId = %d\n",p->fId.i);
+	}else{
+		printf("Unkown error");
+		exit(1);
+	}
 
     return p;
 }
 
 nodeType *defVar(int type, int var){
+	//fprintf(stderr,"defining variable %d as type %d\n", var, type);
 	if( sym[var] == NULL ){
 		sym[var] = (variable *)malloc(sizeof(variable *));
+
+		//fprintf(stderr,"Defining %d var as type %d\n",var,type);
 		sym[var]->type = type;
 	
 		return opr('D', 0);
 	}else{
 		yyerror("variable defined twice.");
+		exit(1);
 	}
 }
 

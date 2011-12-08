@@ -1,13 +1,3 @@
-int i;
-int sum;
-int increment;
-for ( i = 1 step increment to 100 ) {
-	sum = sum + i;
-}
-
-while( i == 0 ){
-	sum = sum - 1;
-}
-
-print sum;
-
+int a;
+int b;
+a = b + 1;

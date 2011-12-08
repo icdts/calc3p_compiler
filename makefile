@@ -1,5 +1,5 @@
 calc3p: lex.yy.c y.tab.c
-	gcc -g compiler.c y.tab.c lex.yy.c -o wat
+	gcc -g calc3.c compiler.c y.tab.c lex.yy.c -o wat
 lex.yy.c: y.tab.h lex.l
 	lex lex.l
 y.tab.c: y.tab.h

@@ -1,22 +1,31 @@
-#include <stdio.h>
 #include "calc3.h"
 #include "y.tab.h"
 
 static int lbl;
 
 int ex(nodeType *p) {
-    int lbl1, lbl2;
+    int lbl1, lbl2, type1, type2;
+
+	//fprintf(stderr,"ex(%d);\n",p->type);
 
     if (!p) return 0;
     switch(p->type) {
+	printTypeStack();
     case typeIntCon:       
-        printf("\tpush\t%d\n", p->iCon.value); 
+        printf("\tI_Constant\tvalue:%d\n", p->iCon.value); 
+		push_type(typeIntCon);	
         break;
 	case typeFloatCon:
-        printf("\tpush\t%f\n", p->fCon.value); 
+        printf("\tR_Constant\tvalue:%d\n", p->fCon.value); 
+		push_type(typeFloatCon);
         break;
-    case typeId:        
-        printf("\tpush\t%c\n", p->id.i + 'a'); 
+    case typeIntId:        
+		printf("\tI_Variable\t%d\n", p->iId.i); 
+		push_type(typeIntId);
+		break;
+	case typeFloatId:
+		printf("\tR_Variable\t%s\n", p->fId.i); 
+		push_type(typeFloatId);
         break;
     case typeOpr:
         switch(p->opr.oper) {
@@ -50,35 +59,128 @@ int ex(nodeType *p) {
             break;
         case PRINT:     
             ex(p->opr.op[0]);
+			pop_type();
+
             printf("\tprint\n");
             break;
         case '=':       
+			ex(p->opr.op[0]);
             ex(p->opr.op[1]);
-            printf("\tpop\t%c\n", p->opr.op[0]->id.i + 'a');
+			type1 = pop_type();
+			type2 = pop_type();
+			if( type2 == typeIntId ){
+				if( type1 == typeIntCon || type1 == typeIntId ){
+					printf("\tI_Assign\n");
+				}
+			}else if( type2 == typeFloatId ){
+				if( type1 == typeFloatCon || type1 == typeFloatId ){
+					printf("\tR_Assign\n");
+				}
+			}else{
+				printf("Cannot assign value to constant %d %d\n", type1, type2);
+				exit(1);
+			}
             break;
         case UMINUS:    
             ex(p->opr.op[0]);
             printf("\tneg\n");
             break;
 		case 'D':   
-			printf("\tdefine a var\n"); /* do nothing for defines */
+			//printf("\tdefine a var\n"); /* do nothing for defines */
 			break;
+		
+		//enum Type {typeIntId, typeFloatId, IntVar, typeFloatId};
         default:
             ex(p->opr.op[0]);
             ex(p->opr.op[1]);
-            switch(p->opr.oper) {
-            case '+':   printf("\tadd\n"); break;
-            case '-':   printf("\tsub\n"); break; 
-            case '*':   printf("\tmul\n"); break;
-            case '/':   printf("\tdiv\n"); break;
-            case '<':   printf("\tcompLT\n"); break;
-            case '>':   printf("\tcompGT\n"); break;
-            case GE:    printf("\tcompGE\n"); break;
-            case LE:    printf("\tcompLE\n"); break;
-            case NE:    printf("\tcompNE\n"); break;
-            case EQ:    printf("\tcompEQ\n"); break;
+			type1 = pop_type();
+			type2 = pop_type();
+            int is_real_op;
+			if(type1 == typeFloatId || type1 == typeFloatId || type2 == typeFloatId || type2 == typeFloatId){
+				is_real_op = 1;
+			}else{
+				is_real_op = 0;
+			}
+			switch(p->opr.oper) {
+            case '+':   
+				if(is_real_op == 1){
+					printf("\tR_Add\n");
+					push_type(typeFloatId);
+				}else{
+					printf("\tI_Add\n");
+					push_type(typeIntId);
+				}
+				break;
+            case '-':  
+				if(is_real_op == 1){
+					printf("\tR_Subtract\n");
+					push_type(typeFloatId);
+				}else{
+					printf("\tI_Subtract\n");
+					push_type(typeIntId);
+				}
+				break; 
+            case '*':
+				if(is_real_op == 1){
+					printf("\tR_Multiply\n");
+					push_type(typeFloatId);
+				}else{
+					printf("\tI_Multiply\n");
+					push_type(typeIntId);
+				}
+				break;
+            case '/':
+				if(is_real_op == 1){
+					printf("\tR_Divide\n");
+					push_type(typeFloatId);
+				}else{
+					printf("\tI_Divide\n");
+					push_type(typeIntId);
+				}
+				break;
+            case '<':
+				if(is_real_op == 1){
+					printf("\tR_Less\n");
+				}else{
+					printf("\tI_Less\n");
+				}
+				push_type(typeIntId);
+				break;
+            case '>':
+				if(is_real_op == 1){
+					printf("\tR_Greater\n");
+				}else{
+					printf("\tI_Less\n");
+				}
+				push_type(typeIntId);
+				break;
+            case GE:
+				printf("\t<Code for GE>\n");
+				break;
+            case LE:
+				printf("\t<Code for LE>\n");
+				break;
+            case NE:
+				if(is_real_op == 1){
+					printf("\tR_Equal\n");
+				}else{
+					printf("\tI_Equal\n");
+				}
+				printf("\tI_Minus");
+				push_type(typeIntId);
+				break;
+            case EQ:    
+				if(is_real_op == 1){
+					printf("\tR_Equal\n");
+				}else{
+					printf("\tI_Equal\n");
+				}
+				push_type(typeIntId);
+				break;
             }
         }
     }
     return 0;
 }
+
+

@@ -22,8 +22,14 @@ int current_next_index = 0;
 
 %%
 
-"int"		return TYPE;
-"float"		return TYPE;
+"int"		{
+				yylval.iType = typeIntId; 
+				return TYPE;
+			};
+"float"		{
+				yylval.iType = typeFloatId; 
+				return TYPE;
+			};
 "for"			return FOR;
 ">="            return GE;
 "<="            return LE;
@@ -36,11 +42,8 @@ int current_next_index = 0;
 "step"			return STEP;
 "to"			return TO;
 
-[a-z][a-z]*       {
-				//fprintf(stderr,"variable: %s\n", yytext);
-
+[a-z][a-z]*	{
                 yylval.sIndex = find_var(yytext);
-
                 return VARIABLE;
             }
 
@@ -73,18 +76,9 @@ int find_var(char*  name){
 	struct var *current = first_var;
 
 	while ( current != NULL ){
-
-		//fprintf(stderr,"is: %s equal to this: %s\n", name, current->name);
-
 		if( strcmp(current->name,name) == 0 ){
-
-			//fprintf(stderr,"yes, index: %d\n", current->index);
-
 			return current->index;
 		}
-
-		//fprintf(stderr,"no, get next\n");
-
 		prev = current;
 		current = current->next;
 	}
@@ -93,8 +87,6 @@ int find_var(char*  name){
 	struct var *new = (struct var *)malloc(sizeof(struct var));
 	new->index = current_next_index;
 	current_next_index = current_next_index + 1;
-
-	//fprintf(stderr,"current next index: %d", current_next_index);
 
 	new->name = (char *)malloc(sizeof(char*));
 	strcpy(new->name,name);
