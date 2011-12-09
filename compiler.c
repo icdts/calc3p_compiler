@@ -59,48 +59,78 @@ int ex(nodeType *p) {
             break;
         case PRINT:     
             ex(p->opr.op[0]);
-			pop_type();
-
-            printf("\tprint\n");
-            break;
-        case '=':       
-			ex(p->opr.op[0]);
-            ex(p->opr.op[1]);
 			type1 = pop_type();
-			type2 = pop_type();
-			if( type2 == typeIntId ){
-				if( type1 == typeIntCon || type1 == typeIntId ){
-					printf("\tI_Assign\n");
+
+			if( type1 == typeIntCon || type1 == typeIntId ){
+				if( type1 == typeIntId ){
+					printf("\tI_Value");
 				}
-			}else if( type2 == typeFloatId ){
-				if( type1 == typeFloatCon || type1 == typeFloatId ){
-					printf("\tR_Assign\n");
-				}
+				printf("\tI_Write\n");	
 			}else{
-				printf("Cannot assign value to constant %d %d\n", type1, type2);
-				exit(1);
+				if( type1 == typeFloatId ){
+					printf("\tR_Value");
+				}
+				printf("\tR_Write\n");
 			}
+
             break;
         case UMINUS:    
             ex(p->opr.op[0]);
             printf("\tneg\n");
             break;
-		case 'D':   
-			//printf("\tdefine a var\n"); /* do nothing for defines */
+		case 'c':
 			break;
-		
-		//enum Type {typeIntId, typeFloatId, IntVar, typeFloatId};
-        default:
-            ex(p->opr.op[0]);
+		case 'D':   
+			break;
+		case '=':
+			ex(p->opr.op[0]);
             ex(p->opr.op[1]);
 			type1 = pop_type();
 			type2 = pop_type();
+
+			if( type1 == typeIntId ){
+				printf("\tI_Value\n");
+			}else if( type1 == typeFloatId ){
+				printf("\tR_Value\n");
+			}
+
+			if( type2 == typeIntId ){
+				if( type1 == typeIntCon || type1 == typeIntId ){
+					printf("\tI_Assign\twords:1\n");
+				}
+			}else if( type2 == typeFloatId ){
+				if( type1 == typeFloatCon || type1 == typeFloatId ){
+					printf("\tR_Assign\twords:1\n");
+				}
+			}else{
+				printf("Cannot assign value to constant %d %d\n", type1, type2);
+				exit(1);
+			}
+			break;	
+        default:
+            ex(p->opr.op[0]);
+			type1 = pop_type();
+			if( type1 == typeIntId ){
+				printf("\tI_Value\n");
+			}else if( type1 == typeFloatId ){
+				printf("\tR_Value\n");
+			}
+
+            ex(p->opr.op[1]);
+			type2 = pop_type();
+			if( type2 == typeIntId ){
+				printf("\tI_Value\n");
+			}else if( type2 == typeFloatId ){
+				printf("\tR_Value\n");
+			}
+
             int is_real_op;
 			if(type1 == typeFloatId || type1 == typeFloatId || type2 == typeFloatId || type2 == typeFloatId){
 				is_real_op = 1;
 			}else{
 				is_real_op = 0;
 			}
+
 			switch(p->opr.oper) {
             case '+':   
 				if(is_real_op == 1){

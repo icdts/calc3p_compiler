@@ -32,7 +32,7 @@ variable *sym[99];                    /* symbol table */
 %token <fValue> FLOAT
 %token <sIndex> VARIABLE
 %token <iType> TYPE
-%token WHILE IF PRINT FOR STEP TO
+%token WHILE IF PRINT FOR STEP TO COMMENT
 %nonassoc IFX
 %nonassoc ELSE
 
@@ -57,16 +57,17 @@ def_var:
 		TYPE VARIABLE				 { $$ = defVar($1,$2); }
 		;
 stmt:
-          ';'                            							{ $$ = opr(';', 2, NULL, NULL); }
+        ';'															{ $$ = opr(';', 2, NULL, NULL); }
+		| COMMENT													{ $$ = opr('c', 0); }
         | expr ';'                       							{ $$ = $1; }
 		| def_var ';'					 							{ $$ = $1; }
         | PRINT expr ';'                 							{ $$ = opr(PRINT, 1, $2); }
         | VARIABLE '=' expr ';'         				 			{ $$ = opr('=', 2, id($1), $3); }
         | WHILE '(' expr ')' stmt        							{ $$ = opr(WHILE, 2, $3, $5); }
-		| FOR '(' VARIABLE '=' expr STEP expr TO expr ')' stmt 	{ $$ = opr(FOR, 5, $3, $5, $7, $9, $11); }
+		| FOR '(' VARIABLE '=' expr STEP expr TO expr ')' stmt		{ $$ = opr(FOR, 5, $3, $5, $7, $9, $11); }
         | IF '(' expr ')' stmt %prec IFX 							{ $$ = opr(IF, 2, $3, $5); }
         | IF '(' expr ')' stmt ELSE stmt 							{ $$ = opr(IF, 3, $3, $5, $7); }
-        | '{' stmt_list '}'              							{ $$ = $2; }
+        | '{' stmt_list '}'											{ $$ = $2; }
         ;
 
 stmt_list:
@@ -137,8 +138,11 @@ nodeType *id(int i) {
 	if( sym[i] == NULL )
 		yyerror("variable used before definition");
 
+    // allocate node 
+	fprintf(stderr,"i: %d",i);
+	fprintf(stderr,"sym[i]->type: %d",sym[i]->type);
+	fprintf(stderr,"typeIntId: %d",typeIntId);
 	if( sym[i]->type == typeIntId ){ 
-    /* allocate node */
     	nodeSize = SIZEOF_NODETYPE + sizeof(intIdNodeType);
 	}else{
     	nodeSize = SIZEOF_NODETYPE + sizeof(floatIdNodeType);

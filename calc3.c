@@ -16,7 +16,7 @@ void push_type(int t){
 
 int pop_type(){
 	if( top_of_stack == NULL ){
-		printf("Stack error");
+		printf("Stack error\n");
 		exit(1);
 	}
 

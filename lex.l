@@ -41,6 +41,8 @@ int current_next_index = 0;
 "print"         return PRINT;
 "step"			return STEP;
 "to"			return TO;
+"//".*			return COMMENT;
+"/*".*"*/"		return COMMENT;
 
 [a-z][a-z]*	{
                 yylval.sIndex = find_var(yytext);
