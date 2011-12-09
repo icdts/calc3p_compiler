@@ -1,0 +1,12 @@
+/*
+this is a comment on
+multiple lines whoo
+*/
+/* this
+is
+another */
+/* same line */
+//different notation
+
+int a; //durr
+a = 0; /* I can do things */

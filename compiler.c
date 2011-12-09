@@ -24,7 +24,7 @@ int ex(nodeType *p) {
 		push_type(typeIntId);
 		break;
 	case typeFloatId:
-		printf("\tR_Variable\t%s\n", p->fId.i); 
+		printf("\tR_Variable\t%d\n", p->fId.i); 
 		push_type(typeFloatId);
         break;
     case typeOpr:
@@ -63,12 +63,12 @@ int ex(nodeType *p) {
 
 			if( type1 == typeIntCon || type1 == typeIntId ){
 				if( type1 == typeIntId ){
-					printf("\tI_Value");
+					printf("\tI_Value\n");
 				}
 				printf("\tI_Write\n");	
 			}else{
 				if( type1 == typeFloatId ){
-					printf("\tR_Value");
+					printf("\tR_Value\n");
 				}
 				printf("\tR_Write\n");
 			}
@@ -84,26 +84,31 @@ int ex(nodeType *p) {
 			break;
 		case '=':
 			ex(p->opr.op[0]);
-            ex(p->opr.op[1]);
 			type1 = pop_type();
+
+            ex(p->opr.op[1]);
 			type2 = pop_type();
 
-			if( type1 == typeIntId ){
+			if( type2 == typeIntId ){
 				printf("\tI_Value\n");
-			}else if( type1 == typeFloatId ){
+				type2 = typeIntCon;
+			}else if( type2 == typeFloatId ){
 				printf("\tR_Value\n");
+				type2 = typeFloatCon;
 			}
 
-			if( type2 == typeIntId ){
-				if( type1 == typeIntCon || type1 == typeIntId ){
-					printf("\tI_Assign\twords:1\n");
+			if( type1 == typeIntId ){
+				if(type2 == typeFloatCon){
+					printf("\tR_To_I\n");
 				}
-			}else if( type2 == typeFloatId ){
-				if( type1 == typeFloatCon || type1 == typeFloatId ){
-					printf("\tR_Assign\twords:1\n");
+				printf("\tI_Assign\twords:1\n");
+			}else if( type1 == typeFloatId ){
+				if(type2 == typeIntCon){
+					printf("\tI_To_R\n");
 				}
+				printf("\tR_Assign\twords:1\n");
 			}else{
-				printf("Cannot assign value to constant %d %d\n", type1, type2);
+				printf("Cannot assign value to constant\n");
 				exit(1);
 			}
 			break;	

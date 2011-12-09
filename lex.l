@@ -42,9 +42,9 @@ int current_next_index = 0;
 "step"			return STEP;
 "to"			return TO;
 "//".*			return COMMENT;
-"/*".*"*/"		return COMMENT;
+"/*"([^\*]|\*[^/])*"*/" return COMMENT;
 
-[a-z][a-z]*	{
+[a-zA-Z_][a-zA-Z_0-9]*	{
                 yylval.sIndex = find_var(yytext);
                 return VARIABLE;
             }

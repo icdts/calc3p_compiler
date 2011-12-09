@@ -1,0 +1,11 @@
+int a;
+a = 0;
+
+float b;
+b = 0.0;
+
+float c;
+c = 0; //Should automatically convert
+
+int d;
+d = 0.0;  //Same
