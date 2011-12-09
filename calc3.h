@@ -50,14 +50,4 @@ typedef struct nodeTypeTag {
     };
 } nodeType;
 
-struct type_stack {
-	int type;
-	struct type_stack * previous;
-};
-
-void push_type(int t);
-int pop_type();
-void printTypeStack();
-
 extern variable *sym[99];
-struct type_stack * top_of_stack;
