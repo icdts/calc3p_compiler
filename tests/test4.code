@@ -1,6 +1,10 @@
 int i;
 int a;
 i = 0;
+while(i < 1){
+	i = i + 1;
+}
+
 for(i = 0 step 1 to 100){
 	a = 0;
 }

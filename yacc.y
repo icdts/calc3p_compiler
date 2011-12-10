@@ -14,6 +14,7 @@ nodeType *defVar(int type, int var);
 void freeNode(nodeType *p);
 int ex(nodeType *p);
 int yylex(void);
+void print_all();
 
 void yyerror(const char *s);
 
@@ -32,13 +33,14 @@ variable *sym[99];                    /* symbol table */
 %token <fValue> FLOAT
 %token <sIndex> VARIABLE
 %token <iType> TYPE
-%token WHILE IF PRINT FOR STEP TO COMMENT
+%token DO WHILE IF PRINT FOR STEP TO COMMENT PROG UNTIL
 %nonassoc IFX
 %nonassoc ELSE
 
 %left GE LE EQ NE '>' '<'
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
+%left PluE MinE MulE DivE ModE
 %nonassoc UMINUS
 
 %type <nPtr> stmt expr stmt_list def_var
@@ -46,7 +48,7 @@ variable *sym[99];                    /* symbol table */
 %%
 
 program:
-        function                { exit(0); }
+        function                { print_all(); exit(0); }
         ;
 
 function:
@@ -63,11 +65,18 @@ stmt:
 		| def_var ';'					 							{ $$ = $1; }
         | PRINT expr ';'                 							{ $$ = opr(PRINT, 1, $2); }
         | VARIABLE '=' expr ';'         				 			{ $$ = opr('=', 2, id($1), $3); }
+        | VARIABLE PluE expr ';'         				 			{ $$ = opr(PluE, 2, id($1), $3); }
+        | VARIABLE MinE expr ';'         				 			{ $$ = opr(MinE, 2, id($1), $3); }
+        | VARIABLE MulE expr ';'         				 			{ $$ = opr(MulE, 2, id($1), $3); }
+        | VARIABLE DivE expr ';'         				 			{ $$ = opr(DivE, 2, id($1), $3); }
+        | VARIABLE ModE expr ';'         				 			{ $$ = opr(ModE, 2, id($1), $3); }
+		| DO stmt WHILE '(' expr ')'								{ $$ = opr(DO, 2, $5, $2); }
+		| DO stmt UNTIL '(' expr ')'								{ $$ = opr(UNTIL, 3, $5, $2); }
         | WHILE '(' expr ')' stmt        							{ $$ = opr(WHILE, 2, $3, $5); }
-		| FOR '(' VARIABLE '=' expr STEP expr TO expr ')' stmt		{ $$ = opr(FOR, 5, $3, $5, $7, $9, $11); }
+		| FOR '(' VARIABLE '=' expr STEP expr TO expr ')' stmt		{ $$ = opr(FOR, 5, id($3),$5,$7,$9,$11); }
         | IF '(' expr ')' stmt %prec IFX 							{ $$ = opr(IF, 2, $3, $5); }
         | IF '(' expr ')' stmt ELSE stmt 							{ $$ = opr(IF, 3, $3, $5, $7); }
-        | '{' stmt_list '}'											{ $$ = $2; }
+        | '{' stmt_list '}'											{ $$ = opr(PROG, 1, $2); }
         ;
 
 stmt_list:
@@ -86,6 +95,7 @@ expr:
         | expr '/' expr         { $$ = opr('/', 2, $1, $3); }
         | expr '<' expr         { $$ = opr('<', 2, $1, $3); }
         | expr '>' expr         { $$ = opr('>', 2, $1, $3); }
+		| expr '%' expr			{ $$ = opr('%', 2, $1, $3); }
         | expr GE expr          { $$ = opr(GE, 2, $1, $3); }
         | expr LE expr          { $$ = opr(LE, 2, $1, $3); }
         | expr NE expr          { $$ = opr(NE, 2, $1, $3); }
@@ -139,9 +149,9 @@ nodeType *id(int i) {
 		yyerror("variable used before definition");
 
     // allocate node 
-	fprintf(stderr,"i: %d",i);
-	fprintf(stderr,"sym[i]->type: %d",sym[i]->type);
-	fprintf(stderr,"typeIntId: %d",typeIntId);
+	//fprintf(stderr,"i: %d",i);
+	//fprintf(stderr,"sym[i]->type: %d",sym[i]->type);
+	//fprintf(stderr,"typeIntId: %d",typeIntId);
 	if( sym[i]->type == typeIntId ){ 
     	nodeSize = SIZEOF_NODETYPE + sizeof(intIdNodeType);
 	}else{
@@ -220,7 +230,14 @@ void yyerror(const char *s) {
     fprintf(stdout, "%s\n", s);
 }
 
-int main(void) {
+int main(int argc, char **argv){
+	if(argc > 1){
+		stdin = fopen(argv[1],"r"); 
+	}
     yyparse();
+
+	if(argc > 1){
+		fclose(stdin);
+	}
     return 0;
 }

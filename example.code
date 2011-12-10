@@ -1,6 +1,4 @@
-{ //begin
-	// Test Program "forLoop.pgm"
-	/* This program tests and demonstrates the for loop */
+{
 	int i;
 	int increment;
 	int sum;
@@ -9,6 +7,5 @@
 	for(i = 1 step increment to 100) {
 		sum = sum + i;
 	}
-
-	print sum; // 1 + ... + 100
-} //end
+	print sum; 
+} 

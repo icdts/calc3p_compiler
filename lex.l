@@ -35,13 +35,20 @@ int current_next_index = 0;
 "<="            return LE;
 "=="            return EQ;
 "!="            return NE;
+"+="			return PluE;
+"-="			return MinE;
+"*="			return MulE;
+"/="			return DivE;
+"%="			return ModE;
 "while"         return WHILE;
+"do"			return DO;
+"until"			return UNTIL;
 "if"            return IF;
 "else"          return ELSE;
 "print"         return PRINT;
 "step"			return STEP;
 "to"			return TO;
-"//".*			return COMMENT;
+"//"[^\n]*			return COMMENT;
 "/*"([^\*]|\*[^/])*"*/" return COMMENT;
 
 [a-zA-Z_][a-zA-Z_0-9]*	{
@@ -63,7 +70,7 @@ int current_next_index = 0;
                 return INTEGER;
             }
 
-[-()<>=+*/;{}.] {
+[-()<>=+*/;{}%.] {
                 return *yytext;
              }
 
