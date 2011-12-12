@@ -1,2 +1,23 @@
 I used the source code written by Tom Niemann as my base.  It is available here: http://epaperpress.com/lexandyacc/index.html
-There
+There was quite a bit of modifications necessary.  
+
+The most significant of these was switching from printing everything immediately, and instead using a linked list of statements 
+to represent the program, and printing everything at the end. This let me do neat things like put in a place holder for a jump,
+then come back and replace it with the proper position to jump to. Or functionalize the math/comparison operator code, since I 
+could use the same function to convert value of both by inserting statements into themiddle of the list.  As a result of this, 
+the amount of redundant code in my compiler.c file was reduced drastically.  I also took advantage of this for the Prog statement.  
+Initially I put a statement with varlen:0, then come back later and change it to match the number of variables actually used.
+
+My code assumes that everything should be converted to real if there is a real and integer value in an operation.  If it gets assigned
+to an integer variable later, it will be converted back.
+
+Things I implemented:
+	Float values
+	C style variable names
+	C style comments (single and multiple line)
+	Semantic analysis (types are automatically converted, handled with a type stack using the types from the symbol table)
+	for, do-while, do-until, while loops
+	Math assignment operators ("+=" and the like.  Was done to make the for loop easier to code, but is a nice thing to have anyways.)	
+
+The "tests" directory contains tests I ran.  The .code files are the test itself, the .output is the expected output.  I just used vimdiff
+	to compare.

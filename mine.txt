@@ -1,2 +1,0 @@
-0001	Prog	varlen:0	addr:4	
-0004	EndProg	

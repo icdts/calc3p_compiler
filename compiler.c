@@ -52,15 +52,17 @@ int ex(nodeType *p) {
 			break;
 		case DO:
 			start_of_loop = pos;
-			ex(p->opr.op[1]); //stmts
-			ex(p->opr.op[0]); //condition
-			push_asm_statement("Jmp_if_True",1,iargs("to:",pos)); //replace placeholder
+			ex(p->opr.op[0]); //stmts
+			ex(p->opr.op[1]); //condition
+			push_asm_statement("Jmp_if_True",1,iargs("to:",pos+2));
 			break;
 		case UNTIL:
+			//fprintf(stderr,"UNTIL");
 			start_of_loop = pos;
-			ex(p->opr.op[1]); //stmts
-			ex(p->opr.op[0]); //condition
-			push_asm_statement("Jmp_if_False",1,iargs("to:",pos)); //replace placeholder
+			ex(p->opr.op[0]); //stmts
+			ex(p->opr.op[1]); //condition
+			push_asm_statement("Jmp_if_False",1,iargs("to:",pos+2));
+			//fprintf(stderr,"UNTIL");
 			break;
         case WHILE:
 			start_of_loop = pos;
@@ -217,9 +219,9 @@ int ex(nodeType *p) {
 			type1 = pop_type();
 			
 			if( type1 == typeIntCon ){
-				tmp_str = "I_";		
+				strcpy(tmp_str,"I_");		
 			}else{
-				tmp_str = "R_";
+				strcpy(tmp_str,"R_");
 			}
 
 			//check if (op0-op1)+1 > 0
@@ -247,9 +249,9 @@ int ex(nodeType *p) {
 			type1 = pop_type();
 			
 			if( type1 == typeIntCon ){
-				tmp_str = "I_";		
+				strcpy(tmp_str,"I_");		
 			}else{
-				tmp_str = "R_";
+				strcpy(tmp_str,"R_");
 			}
 
 			//check if (op0-op1)-1 < 0
@@ -364,6 +366,8 @@ struct statement * push_asm_statement(char* cmd, int argc, ...){
 
 	//inc pos
 	pos += argc + 1;
+	
+	//fprintf(stderr,"%s\n",new_stmt->string);
 }
 
 void replace_asm_statement(int position, char* cmd, int argc, ...){
@@ -438,6 +442,7 @@ void insert_asm_statement(int position, char* cmd, int argc, ...){
 		current->position += argc + 1;
 		current = current->next_statement;
 	}
+
 }
 
 char* iargs(char* str, int i){
@@ -523,12 +528,12 @@ void math_assignment(nodeType* var, nodeType* expr, char* name){
 		is_real_type = 0;
 	}
 	if( type == typeIntId ){
-		if(is_real_op == 1){
+		if(is_real_type == 1){
 			push_asm_statement("R_To_I",0);
 		}
 		push_asm_statement("I_Assign",1,"words:1");
 	}else if( type == typeFloatId ){
-		if(is_real_op == 0){
+		if(is_real_type == 0){
 			push_asm_statement("I_To_R",0);
 		}
 		push_asm_statement("R_Assign",1,"words:1");

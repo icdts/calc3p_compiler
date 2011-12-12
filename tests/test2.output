@@ -1,0 +1,43 @@
+0001	Prog	varlen:2	addr:4	
+0004	I_Variable	lev:0	disp:3	
+0007	I_Constant	value:0	
+0009	I_Assign	words:1	
+0011	I_Variable	lev:0	disp:3	
+0014	I_Value	
+0015	I_Constant	value:5	
+0016	I_Less	
+0017	Jmp_if_True	to:21	
+0019	Jmp	to:11	
+0021	I_Variable	lev:0	disp:4	
+0024	I_Constant	value:0	
+0026	I_Assign	words:1	
+0028	I_Variable	lev:0	disp:4	
+0031	I_Value	
+0032	I_Constant	value:100	
+0033	I_Less	
+0034	Jmp_if_True	to:49	
+0036	I_Variable	lev:0	disp:4	
+0039	I_Variable	lev:0	disp:4	
+0042	I_Value	
+0043	I_Constant	value:0	
+0044	I_Add	
+0045	I_Assign	words:1	
+0047	Jmp	to:28	
+0049	I_Variable	lev:0	disp:4	
+0052	I_Constant	value:50	
+0054	I_Assign	words:1	
+0056	I_Variable	lev:0	disp:4	
+0059	I_Value	
+0060	I_Constant	value:0	
+0061	I_Equal	
+0062	I_Minus	
+0063	Jmp_if_True	to:65	
+0065	I_Variable	lev:0	disp:4	
+0068	I_Constant	value:1	
+0070	I_Assign	words:1	
+0072	I_Variable	lev:0	disp:4	
+0075	I_Value	
+0076	I_Constant	value:256	
+0077	I_Equal	
+0078	Jmp_if_False	to:80	
+0080	EndProg	

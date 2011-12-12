@@ -33,7 +33,7 @@ variable *sym[99];                    /* symbol table */
 %token <fValue> FLOAT
 %token <sIndex> VARIABLE
 %token <iType> TYPE
-%token DO WHILE IF PRINT FOR STEP TO COMMENT PROG UNTIL
+%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG 
 %nonassoc IFX
 %nonassoc ELSE
 
@@ -70,9 +70,9 @@ stmt:
         | VARIABLE MulE expr ';'         				 			{ $$ = opr(MulE, 2, id($1), $3); }
         | VARIABLE DivE expr ';'         				 			{ $$ = opr(DivE, 2, id($1), $3); }
         | VARIABLE ModE expr ';'         				 			{ $$ = opr(ModE, 2, id($1), $3); }
-		| DO stmt WHILE '(' expr ')'								{ $$ = opr(DO, 2, $5, $2); }
-		| DO stmt UNTIL '(' expr ')'								{ $$ = opr(UNTIL, 3, $5, $2); }
         | WHILE '(' expr ')' stmt        							{ $$ = opr(WHILE, 2, $3, $5); }
+		| DO stmt WHILE '(' expr ')'								{ $$ = opr(DO, 2, $2, $5); }
+		| DO stmt UNTIL '(' expr ')'								{ $$ = opr(UNTIL, 2, $2, $5); }
 		| FOR '(' VARIABLE '=' expr STEP expr TO expr ')' stmt		{ $$ = opr(FOR, 5, id($3),$5,$7,$9,$11); }
         | IF '(' expr ')' stmt %prec IFX 							{ $$ = opr(IF, 2, $3, $5); }
         | IF '(' expr ')' stmt ELSE stmt 							{ $$ = opr(IF, 3, $3, $5, $7); }
