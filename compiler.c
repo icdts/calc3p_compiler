@@ -5,9 +5,16 @@
 int pos = 1;
 int inside_prog = 0;
 int prog_vars = 0;
+int inside_proc = 0;
+int proc_vars = 0;
+int first_prog_stmt = 4;
+
 struct type_stack * top_of_stack;
 struct statement * first_statement;
 struct statement * last_statement;
+
+struct proc * first_proc;
+struct proc * last_proc;
 
 int ex(nodeType *p) {
     int type1, type2;
@@ -15,6 +22,7 @@ int ex(nodeType *p) {
 	int jmp_pos;
 	int jmp_pos2;
 	int start_prog;
+	int start_proc;
 	char tmp_str[MAX_STMT_LEN];
 	char tmp_str2[MAX_STMT_LEN];
 
@@ -22,44 +30,75 @@ int ex(nodeType *p) {
     switch(p->type) {
 	printTypeStack();
     case typeIntCon:       
-		push_asm_statement("I_Constant",1,iargs("value:",p->iCon.value));
+		push_asm_statement("I_Constant",1,iargs(p->iCon.value));
 		push_type(typeIntCon);	
         break;
 	case typeFloatCon:
-		push_asm_statement("R_Constant",1,fargs("value:",p->fCon.value));
+		push_asm_statement("R_Constant",1,fargs(p->fCon.value));
 		push_type(typeFloatCon);
         break;
     case typeIntId:        
-		push_asm_statement("I_Variable",2,"lev:0",iargs("disp:",p->iId.i + 3));
+		push_asm_statement("I_Variable",2,"0",iargs(p->iId.i + 3));
 		push_type(typeIntId);
 		break;
 	case typeFloatId:
-		push_asm_statement("R_Variable",2,"lev:0",iargs("disp:",p->fId.i + 3));
+		push_asm_statement("R_Variable",2,"0",iargs(p->fId.i + 3));
 		push_type(typeFloatId);
         break;
     case typeOpr:
         switch(p->opr.oper) {
 		case PROG:
-			if(inside_prog == 0 ){ //only one prog statement
-				start_prog = pos;
-				inside_prog = 1;
-				push_asm_statement("Prog", 2, "varlen:0","addr:4"); //Placeholder
-				ex(p->opr.op[0]);
-				push_asm_statement("EndProg",0);
-				replace_asm_statement(start_prog,"Prog", 2, iargs("varlen:",prog_vars), "addr:4");
+			start_prog = pos;
+			inside_prog = 1;
+			push_asm_statement("Prog", 2, "0","4"); //Placeholder
+
+			ex(p->opr.op[0]);
+			push_asm_statement("EndProg",0);
+			replace_asm_statement(start_prog,"Prog", 2, iargs(prog_vars), iargs(first_prog_stmt));
+			break;
+		case PROC:
+			if(inside_proc == 0 ){
+				struct proc * new_proc = (struct proc *)malloc(sizeof(struct proc));
+				if(first_proc == NULL){
+					first_proc = new_proc;
+					last_proc = new_proc;
+				}else{
+					last_proc->next_proc = new_proc;
+					last_proc = new_proc;
+				}
+				new_proc->position = pos;
+				new_proc->id = p->opr.op[0]->iId.i;
+
+				inside_proc = 1;
+				start_proc = pos;
+				push_asm_statement("Proc", 2, "0", "0"); //Placeholder
+				ex(p->opr.op[1]);
+				push_asm_statement("EndProc",0);
+				first_prog_stmt = pos;
+				replace_asm_statement(start_proc,"Proc",2,iargs(proc_vars),iargs(start_proc+3));
+				
+				inside_proc = 0;
+				ex(p->opr.op[2]);
+			}else{
+				fprintf(stderr,"%s\n", "Cannot nest Procedure definitions");
+				exit(1);
 			}
+			break;
+		case CALL:
+			push_asm_statement("Call",2,iargs(inside_proc),iargs(get_proc_start(p->opr.op[0]->iId.i)));
+			ex(p->opr.op[0]);
 			break;
 		case DO:
 			start_of_loop = pos;
 			ex(p->opr.op[0]); //stmts
 			ex(p->opr.op[1]); //condition
-			push_asm_statement("Jmp_if_True",1,iargs("to:",pos+2));
+			push_asm_statement("Jmp_if_True",1,iargs(pos+2));
 			break;
 		case UNTIL:
 			start_of_loop = pos;
 			ex(p->opr.op[0]); //stmts
 			ex(p->opr.op[1]); //condition
-			push_asm_statement("Jmp_if_False",1,iargs("to:",pos+2));
+			push_asm_statement("Jmp_if_False",1,iargs(pos+2));
 			break;
         case WHILE:
 			start_of_loop = pos;
@@ -69,9 +108,9 @@ int ex(nodeType *p) {
 			push_asm_statement("Jmp_if_True",1,"null"); //placeholder
 
             ex(p->opr.op[1]);
-			push_asm_statement("Jmp",1,iargs("to:",start_of_loop));
+			push_asm_statement("Jmp",1,iargs(start_of_loop));
 
-			replace_asm_statement(jmp_pos,"Jmp_if_True",1,iargs("to:",pos)); //replace placeholder
+			replace_asm_statement(jmp_pos,"Jmp_if_True",1,iargs(pos)); //replace placeholder
             break;
 		case FOR:
 			//initial assignment
@@ -93,10 +132,10 @@ int ex(nodeType *p) {
             math_assignment(p->opr.op[0],p->opr.op[1],"Add"); 
 
 			//Go back to condition
-			push_asm_statement("Jmp",1,iargs("to:",start_of_loop));
+			push_asm_statement("Jmp",1,iargs(start_of_loop));
 
 			//replace placeholder with right jump position
-			replace_asm_statement(jmp_pos,"Jmp_if_True",1,iargs("to:",pos));
+			replace_asm_statement(jmp_pos,"Jmp_if_True",1,iargs(pos));
 			break;
         case IF:
             ex(p->opr.op[0]);
@@ -118,7 +157,7 @@ int ex(nodeType *p) {
             } 
 			
 			//replace placeholder
-			replace_asm_statement(jmp_pos,"Jmp_if_False",1,iargs("to:",pos));
+			replace_asm_statement(jmp_pos,"Jmp_if_False",1,iargs(pos));
 
 			//if there's an else
 			if (p->opr.nops > 2) {
@@ -126,7 +165,7 @@ int ex(nodeType *p) {
 				ex(p->opr.op[2]);
 				
 				//replace placeholder for skipping else
-				replace_asm_statement(jmp_pos,"Jmp",1,iargs("to:",pos));
+				replace_asm_statement(jmp_pos,"Jmp",1,iargs(pos));
             } 
 			break;
         case PRINT:     
@@ -278,8 +317,10 @@ int ex(nodeType *p) {
 			}
 			break;
 		case 'D':   
-			if(inside_prog == 1){
+			if(inside_proc == 0){
 				prog_vars += 1;	
+			}else{
+				proc_vars += 1;
 			}
 			break;
 		case 'c':
@@ -327,6 +368,16 @@ void printTypeStack(){
 		printf("\t%d\n",current->type);
 		current = current->previous;
 	}
+}
+
+int get_proc_start(int proc_id){
+	struct proc * current = first_proc;
+	while( current != NULL ){
+		if(current->id == proc_id){ 
+			return current->position;
+		}
+	}
+	return -1;
 }
 
 struct statement * push_asm_statement(char* cmd, int argc, ...){
@@ -442,15 +493,15 @@ void insert_asm_statement(int position, char* cmd, int argc, ...){
 
 }
 
-char* iargs(char* str, int i){
+char* iargs( int i ){
 	char * new_str = (char*)malloc(sizeof(char[20]));
-	sprintf(new_str,"%s%d",str,i);
+	sprintf(new_str,"%d",i);
 	return new_str;
 }
 
-char* fargs(char* str, float f){
+char* fargs( float f ){
 	char * new_str = (char*)malloc(sizeof(char[20]));
-	sprintf(new_str,"%s%f",str,f);
+	sprintf(new_str,"%f",f);
 	return new_str;
 }
 

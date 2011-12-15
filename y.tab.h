@@ -53,20 +53,21 @@
      PROG = 271,
      PROC = 272,
      FUNC = 273,
-     IFX = 274,
-     ELSE = 275,
-     FUNC_STMT = 276,
-     FUNC_NO_ARG = 277,
-     NE = 278,
-     EQ = 279,
-     LE = 280,
-     GE = 281,
-     ModE = 282,
-     DivE = 283,
-     MulE = 284,
-     MinE = 285,
-     PluE = 286,
-     UMINUS = 287
+     CALL = 274,
+     IFX = 275,
+     ELSE = 276,
+     FUNC_STMT = 277,
+     FUNC_NO_ARG = 278,
+     NE = 279,
+     EQ = 280,
+     LE = 281,
+     GE = 282,
+     ModE = 283,
+     DivE = 284,
+     MulE = 285,
+     MinE = 286,
+     PluE = 287,
+     UMINUS = 288
    };
 #endif
 /* Tokens.  */
@@ -86,20 +87,21 @@
 #define PROG 271
 #define PROC 272
 #define FUNC 273
-#define IFX 274
-#define ELSE 275
-#define FUNC_STMT 276
-#define FUNC_NO_ARG 277
-#define NE 278
-#define EQ 279
-#define LE 280
-#define GE 281
-#define ModE 282
-#define DivE 283
-#define MulE 284
-#define MinE 285
-#define PluE 286
-#define UMINUS 287
+#define CALL 274
+#define IFX 275
+#define ELSE 276
+#define FUNC_STMT 277
+#define FUNC_NO_ARG 278
+#define NE 279
+#define EQ 280
+#define LE 281
+#define GE 282
+#define ModE 283
+#define DivE 284
+#define MulE 285
+#define MinE 286
+#define PluE 287
+#define UMINUS 288
 
 
 
@@ -109,7 +111,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 25 "yacc.y"
+#line 26 "yacc.y"
 
     int iValue;                 /* integer value */
 	float fValue;				/* float value */
@@ -120,7 +122,7 @@ typedef union YYSTYPE
 
 
 /* Line 2068 of yacc.c  */
-#line 124 "y.tab.h"
+#line 126 "y.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

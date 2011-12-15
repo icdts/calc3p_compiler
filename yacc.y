@@ -8,6 +8,7 @@
 /* prototypes */
 nodeType *opr(int oper, int nops, ...);
 nodeType *id(int i);
+nodeType *proc(int i);
 nodeType *iCon(int value);
 nodeType *fCon(float value);
 nodeType *defVar(int type, int var);
@@ -34,7 +35,7 @@ nodeType * top;
 %token <fValue> FLOAT
 %token <sIndex> VARIABLE
 %token <iType> TYPE
-%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG PROC FUNC
+%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG PROC FUNC CALL
 %nonassoc IFX
 %nonassoc ELSE
 %nonassoc FUNC_STMT
@@ -55,8 +56,8 @@ program:
         ;
 
 function:
-          function stmt %prec FUNC_STMT         			{ $$ = opr(';', 2, $1, $2); }
-		| function PROC VARIABLE '(' ')' stmt_list FUNC_NO_ARG	 	{ $$ = opr(PROC, 2, $1, $6);} //No args
+          stmt function							         		{ $$ = opr(';', 2, $1, $2); }
+		| PROC VARIABLE '(' ')' '{' stmt '}' function			{ $$ = opr(PROC, 3, proc($2), $6, $8);} //No args
         | /* NULL */ 						{ $$ = opr(';', 2, NULL, NULL); }
         ;
 def_var: 
@@ -81,6 +82,7 @@ stmt:
         | IF '(' expr ')' stmt %prec IFX 							{ $$ = opr(IF, 2, $3, $5); }
         | IF '(' expr ')' stmt ELSE stmt 							{ $$ = opr(IF, 3, $3, $5, $7); }
         | '{' stmt_list '}'											{ $$ = $2; }
+		| VARIABLE '(' ')'											{ $$ = opr(CALL, 1, proc($1)); }
         ;
 
 stmt_list:
@@ -149,8 +151,9 @@ nodeType *id(int i) {
     nodeType *p;
     size_t nodeSize;
 
-	if( sym[i] == NULL )
+	if( sym[i] == NULL ){
 		yyerror("variable used before definition");
+	}
 
     // allocate node 
 	//fprintf(stderr,"i: %d",i);
@@ -177,6 +180,27 @@ nodeType *id(int i) {
 		printf("Unkown error");
 		exit(1);
 	}
+
+    return p;
+}
+
+nodeType *proc(int i){
+    nodeType *p;
+    size_t nodeSize;
+
+	if( sym[i] == NULL ){
+		yyerror("variable used before definition");
+	}
+
+    // allocate node 
+    nodeSize = SIZEOF_NODETYPE + sizeof(intIdNodeType);
+    if ((p = malloc(nodeSize)) == NULL)
+        yyerror("out of memory");
+
+    /* copy information */
+    p->type = typeProc;
+	
+	p->iId.i = i;
 
     return p;
 }

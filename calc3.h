@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef enum { typeIntCon, typeFloatCon, typeIntId, typeFloatId, typeOpr } nodeEnum;
+typedef enum { typeIntCon, typeFloatCon, typeIntId, typeFloatId, typeOpr, typeProc } nodeEnum;
 
 typedef struct {
 	int type;

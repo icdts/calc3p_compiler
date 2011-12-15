@@ -14,15 +14,23 @@ struct statement {
 	struct statement * next_statement;
 };
 
+struct proc {
+	int id;
+	int position;
+	struct proc * next_proc;
+};
+
 void push_type(int t);
 int pop_type();
 void printTypeStack();
 
+int get_proc_start(int proc_id);
+
 struct statement * push_asm_statement(char* cmd, int argc, ...);
 void replace_asm_statement(int position, char* cmd, int argc, ...);
 void insert_asm_statement(int position, char* cmd, int argc, ...);
-char* iargs(char* str, int i);
-char* fargs(char* str, float f);
+char* iargs(int i);
+char* fargs(float f);
 
 void comparison_operator(nodeType* op1, nodeType* op2, char* name);
 void math_operator(nodeType* op1, nodeType* op2, char* name);
