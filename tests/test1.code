@@ -10,22 +10,24 @@
 	<=
 	print
 */
-int a;
-a = 0; //basic assignment
-a = 1.5; //Should automatically convert
-if(a > 1){
-	print a; /* if statement
-	whee
-	*/
-	print 1;
+{
+	int a;
+	a = 0; //basic assignment
+	a = 1.5; //Should automatically convert
+	if(a > 1){
+		print a; /* if statement
+		whee
+		*/
+		print 1;
+	}
+	float b;
+	b = 0; //should automatically convert
+	b = 2.5;
+	if( b < a ){
+		print b;
+	}else{ //Testing else
+		print a;
+	}
+	print b >= a;
+	print b <= a;
 }
-float b;
-b = 0; //should automatically convert
-b = 2.5;
-if( b < a ){
-	print b;
-}else{ //Testing else
-	print a;
-}
-print b >= a;
-print b <= a;

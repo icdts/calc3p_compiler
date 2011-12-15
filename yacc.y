@@ -19,6 +19,7 @@ void print_all();
 void yyerror(const char *s);
 
 variable *sym[99];                    /* symbol table */
+nodeType * top;
 %}
 
 %union {
@@ -33,9 +34,11 @@ variable *sym[99];                    /* symbol table */
 %token <fValue> FLOAT
 %token <sIndex> VARIABLE
 %token <iType> TYPE
-%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG PROC
+%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG PROC FUNC
 %nonassoc IFX
 %nonassoc ELSE
+%nonassoc FUNC_STMT
+%nonassoc FUNC_NO_ARG
 
 %left GE LE EQ NE '>' '<'
 %left '+' '-'
@@ -43,21 +46,19 @@ variable *sym[99];                    /* symbol table */
 %left PluE MinE MulE DivE ModE
 %nonassoc UMINUS
 
-%type <nPtr> stmt expr stmt_list def_var
+%type <nPtr> stmt expr stmt_list def_var function
 
 %%
 
 program:
-        function                { print_all(); exit(0); }
+        function                { top = opr(PROG,1,$1); ex(top); freeNode(top); print_all(); exit(0); }
         ;
 
 function:
-          function stmt         { opr(PROC, 2, $1, $5); }
-		| function PROC '(' ')' stmt_list { opr(PROC, 2, $1, $5);} //No args
-        | /* NULL */
+          function stmt %prec FUNC_STMT         			{ $$ = opr(';', 2, $1, $2); }
+		| function PROC VARIABLE '(' ')' stmt_list FUNC_NO_ARG	 	{ $$ = opr(PROC, 2, $1, $6);} //No args
+        | /* NULL */ 						{ $$ = opr(';', 2, NULL, NULL); }
         ;
-opr_list:
-		
 def_var: 
 		TYPE VARIABLE				 { $$ = defVar($1,$2); }
 		;
@@ -79,7 +80,7 @@ stmt:
 		| FOR '(' VARIABLE '=' expr STEP expr TO expr ')' stmt		{ $$ = opr(FOR, 5, id($3),$5,$7,$9,$11); }
         | IF '(' expr ')' stmt %prec IFX 							{ $$ = opr(IF, 2, $3, $5); }
         | IF '(' expr ')' stmt ELSE stmt 							{ $$ = opr(IF, 3, $3, $5, $7); }
-        | '{' stmt_list '}'											{ $$ = opr(PROG, 1, $2); }
+        | '{' stmt_list '}'											{ $$ = $2; }
         ;
 
 stmt_list:

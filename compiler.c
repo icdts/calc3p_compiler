@@ -17,7 +17,6 @@ int ex(nodeType *p) {
 	int start_prog;
 	char tmp_str[MAX_STMT_LEN];
 	char tmp_str2[MAX_STMT_LEN];
-	//fprintf(stderr,"ex(%d);\n",p->type);
 
     if (!p) return 0;
     switch(p->type) {
@@ -57,12 +56,10 @@ int ex(nodeType *p) {
 			push_asm_statement("Jmp_if_True",1,iargs("to:",pos+2));
 			break;
 		case UNTIL:
-			//fprintf(stderr,"UNTIL");
 			start_of_loop = pos;
 			ex(p->opr.op[0]); //stmts
 			ex(p->opr.op[1]); //condition
 			push_asm_statement("Jmp_if_False",1,iargs("to:",pos+2));
-			//fprintf(stderr,"UNTIL");
 			break;
         case WHILE:
 			start_of_loop = pos;
