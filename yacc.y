@@ -33,7 +33,7 @@ variable *sym[99];                    /* symbol table */
 %token <fValue> FLOAT
 %token <sIndex> VARIABLE
 %token <iType> TYPE
-%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG 
+%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG PROC
 %nonassoc IFX
 %nonassoc ELSE
 
@@ -53,8 +53,11 @@ program:
 
 function:
           function stmt         { ex($2); freeNode($2); }
+		| function PROC '(' ')' stmt_list { opr(PROC, 1, $2); freeNode($5);} //No args
         | /* NULL */
         ;
+opr_list:
+		
 def_var: 
 		TYPE VARIABLE				 { $$ = defVar($1,$2); }
 		;

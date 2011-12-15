@@ -38,10 +38,10 @@
 0074	I_Value	
 0075	I_To_R	
 0076	R_Subtract	
-0077	R_	value:1	
-0079	R_	
-0080	R_	value:0	
-0082	R_	
+0077	R_Constant	value:1	
+0079	R_Add	
+0080	R_Constant	value:0	
+0082	R_Greater	
 0083	I_Write	words:1	
 0085	R_Variable	lev:0	disp:4	
 0088	I_Variable	lev:0	disp:3	
@@ -49,8 +49,8 @@
 0092	I_Value	
 0093	I_To_R	
 0094	R_Subtract	
-0095	R_	value:1	
-0097	R_	
-0098	R_	value:0	
-0100	R_	
+0095	R_Constant	value:1	
+0097	R_Subtract	
+0098	R_Constant	value:0	
+0100	R_Less	
 0101	I_Write	words:1	

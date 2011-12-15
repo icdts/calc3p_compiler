@@ -22,6 +22,7 @@ int current_next_index = 0;
 
 %%
 
+"procedure"	{ return PROC; }
 "int"		{
 				yylval.iType = typeIntId; 
 				return TYPE;

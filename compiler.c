@@ -227,19 +227,19 @@ int ex(nodeType *p) {
 			//check if (op0-op1)+1 > 0
 			strcpy(tmp_str2,tmp_str);
 			strcat(tmp_str2,"Constant");
-			push_asm_statement(tmp_str,1,"value:1");
+			push_asm_statement(tmp_str2,1,"value:1");
 			
 			strcpy(tmp_str2,tmp_str);
 			strcat(tmp_str2,"Add");
-			push_asm_statement(tmp_str,0);
+			push_asm_statement(tmp_str2,0);
 
 			strcpy(tmp_str2,tmp_str);
 			strcat(tmp_str2,"Constant");
-			push_asm_statement(tmp_str,1,"value:0");
+			push_asm_statement(tmp_str2,1,"value:0");
 
 			strcpy(tmp_str2,tmp_str);
 			strcat(tmp_str2,"Greater");
-			push_asm_statement(tmp_str,0);
+			push_asm_statement(tmp_str2,0);
 
 			push_type(typeIntCon);
 
@@ -257,19 +257,19 @@ int ex(nodeType *p) {
 			//check if (op0-op1)-1 < 0
 			strcpy(tmp_str2,tmp_str);
 			strcat(tmp_str2,"Constant");
-			push_asm_statement(tmp_str,1,"value:1");
+			push_asm_statement(tmp_str2,1,"value:1");
 			
 			strcpy(tmp_str2,tmp_str);
 			strcat(tmp_str2,"Subtract");
-			push_asm_statement(tmp_str,0);
+			push_asm_statement(tmp_str2,0);
 
 			strcpy(tmp_str2,tmp_str);
 			strcat(tmp_str2,"Constant");
-			push_asm_statement(tmp_str,1,"value:0");
+			push_asm_statement(tmp_str2,1,"value:0");
 
 			strcpy(tmp_str2,tmp_str);
 			strcat(tmp_str2,"Less");
-			push_asm_statement(tmp_str,0);
+			push_asm_statement(tmp_str2,0);
 
 			push_type(typeIntCon);
 
