@@ -189,7 +189,8 @@ nodeType *proc(int i){
     size_t nodeSize;
 
 	if( sym[i] == NULL ){
-		yyerror("variable used before definition");
+		sym[i] = (variable *)malloc(sizeof(variable *));
+		sym[i]->type = typeProc;
 	}
 
     // allocate node 
