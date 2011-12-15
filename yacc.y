@@ -52,8 +52,8 @@ program:
         ;
 
 function:
-          function stmt         { ex($2); freeNode($2); }
-		| function PROC '(' ')' stmt_list { opr(PROC, 1, $2); freeNode($5);} //No args
+          function stmt         { opr(PROC, 2, $1, $5); }
+		| function PROC '(' ')' stmt_list { opr(PROC, 2, $1, $5);} //No args
         | /* NULL */
         ;
 opr_list:

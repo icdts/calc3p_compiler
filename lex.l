@@ -23,6 +23,7 @@ int current_next_index = 0;
 %%
 
 "procedure"	{ return PROC; }
+"function" { return FUNC; }
 "int"		{
 				yylval.iType = typeIntId; 
 				return TYPE;
