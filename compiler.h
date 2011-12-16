@@ -17,6 +17,7 @@ struct statement {
 struct proc {
 	int id;
 	int position;
+	int params[50];
 	struct proc * next_proc;
 };
 
@@ -25,6 +26,7 @@ int pop_type();
 void printTypeStack();
 
 int get_proc_start(int proc_id);
+struct proc * get_proc(int proc_id);
 
 struct statement * push_asm_statement(char* cmd, int argc, ...);
 void replace_asm_statement(int position, char* cmd, int argc, ...);
@@ -38,3 +40,5 @@ void math_assignment(nodeType* var, nodeType* expr, char* name);
 void assignment(nodeType* var, nodeType* expr);
 void get_values_and_convert(int *type1, int *type2, int insert_at);
 int is_real_op(int type1, int type2);
+
+void check_arguments(struct proc * p);

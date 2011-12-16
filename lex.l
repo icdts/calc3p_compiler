@@ -22,6 +22,7 @@ int current_next_index = 0;
 
 %%
 
+"print"         return PRINT;
 "procedure"	{ return PROC; }
 "function" { return FUNC; }
 "int"		{
@@ -47,7 +48,6 @@ int current_next_index = 0;
 "until"			return UNTIL;
 "if"            return IF;
 "else"          return ELSE;
-"print"         return PRINT;
 "step"			return STEP;
 "to"			return TO;
 "//"[^\n]*			return COMMENT;

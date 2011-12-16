@@ -12,6 +12,7 @@ nodeType *proc(int i);
 nodeType *iCon(int value);
 nodeType *fCon(float value);
 nodeType *defVar(int type, int var);
+nodeType *defProcParam(int type, int var, nodeType* params);
 void freeNode(nodeType *p);
 int ex(nodeType *p);
 int yylex(void);
@@ -20,7 +21,10 @@ void print_all();
 void yyerror(const char *s);
 
 variable *sym[99];                    /* symbol table */
+variable *proc_sym[99];
 nodeType * top;
+int proc_var_count;
+int inside_procedure;
 %}
 
 %union {
@@ -35,11 +39,11 @@ nodeType * top;
 %token <fValue> FLOAT
 %token <sIndex> VARIABLE
 %token <iType> TYPE
-%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG PROC FUNC CALL
+%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG PROC FUNC CALL ARGS
 %nonassoc IFX
 %nonassoc ELSE
-%nonassoc FUNC_STMT
-%nonassoc FUNC_NO_ARG
+%nonassoc PROC_STMT
+%nonassoc PROC_ARG_STMT
 
 %left GE LE EQ NE '>' '<'
 %left '+' '-'
@@ -47,7 +51,7 @@ nodeType * top;
 %left PluE MinE MulE DivE ModE
 %nonassoc UMINUS
 
-%type <nPtr> stmt expr stmt_list def_var function
+%type <nPtr> stmt expr stmt_list def_var function param_list arg_list
 
 %%
 
@@ -56,10 +60,21 @@ program:
         ;
 
 function:
-          stmt function							         		{ $$ = opr(';', 2, $1, $2); }
-		| PROC VARIABLE '(' ')' '{' stmt '}' function			{ $$ = opr(PROC, 3, proc($2), $6, $8);} //No args
+          stmt function							         				{ $$ = opr(';', 2, $1, $2); }
+		| PROC VARIABLE '(' ')' '{' stmt '}' function %prec PROC_STMT	{ 
+																			$$ = opr(PROC, 3, proc($2), $6, $8); 
+																			inside_procedure = 0;
+																		} //No args
+		| PROC VARIABLE '(' param_list ')' '{' stmt '}' function %prec PROC_ARG_STMT	{ 
+																							$$ = opr(PROC, 4, proc($2), $7, $9, $4); 
+																							inside_procedure = 0; 
+																						} 
         | /* NULL */ 						{ $$ = opr(';', 2, NULL, NULL); }
         ;
+param_list:
+		  TYPE VARIABLE 		 		{ $$ = defProcParam($1,$2,NULL); }
+		| TYPE VARIABLE ',' param_list	{ $$ = defProcParam($1,$2,$4); }
+		;
 def_var: 
 		TYPE VARIABLE				 { $$ = defVar($1,$2); }
 		;
@@ -68,7 +83,7 @@ stmt:
 		| COMMENT													{ $$ = opr('c', 0); }
         | expr ';'                       							{ $$ = $1; }
 		| def_var ';'					 							{ $$ = $1; }
-        | PRINT expr ';'                 							{ $$ = opr(PRINT, 1, $2); }
+        | PRINT '(' expr ')' ';'                							{ $$ = opr(PRINT, 1, $3); }
         | VARIABLE '=' expr ';'         				 			{ $$ = opr('=', 2, id($1), $3); }
         | VARIABLE PluE expr ';'         				 			{ $$ = opr(PluE, 2, id($1), $3); }
         | VARIABLE MinE expr ';'         				 			{ $$ = opr(MinE, 2, id($1), $3); }
@@ -82,8 +97,12 @@ stmt:
         | IF '(' expr ')' stmt %prec IFX 							{ $$ = opr(IF, 2, $3, $5); }
         | IF '(' expr ')' stmt ELSE stmt 							{ $$ = opr(IF, 3, $3, $5, $7); }
         | '{' stmt_list '}'											{ $$ = $2; }
-		| VARIABLE '(' ')'											{ $$ = opr(CALL, 1, proc($1)); }
+		| VARIABLE '(' ')'											{ $$ = opr(CALL, 2, proc($1), NULL); }
+		| VARIABLE '(' arg_list ')'									{ $$ = opr(CALL, 2, proc($1), $3); }
         ;
+arg_list:
+		  expr 					{ $$ = opr(ARGS,1,$1,NULL); }
+		| expr ',' arg_list 	{ $$ = opr(ARGS,2,$1,$3); }
 
 stmt_list:
           stmt                  { $$ = $1; }
@@ -147,38 +166,81 @@ nodeType *fCon(float value) {
     return p;
 }
 
-nodeType *id(int i) {
+nodeType *id(int id) {
     nodeType *p;
     size_t nodeSize;
 
-	if( sym[i] == NULL ){
-		yyerror("variable used before definition");
-	}
+	if( inside_procedure == 0 ){
+		if( sym[id] == NULL ){
+			yyerror("variable used before definition");
+		}
 
-    // allocate node 
-	//fprintf(stderr,"i: %d",i);
-	//fprintf(stderr,"sym[i]->type: %d",sym[i]->type);
-	//fprintf(stderr,"typeIntId: %d",typeIntId);
-	if( sym[i]->type == typeIntId ){ 
-    	nodeSize = SIZEOF_NODETYPE + sizeof(intIdNodeType);
-	}else{
-    	nodeSize = SIZEOF_NODETYPE + sizeof(floatIdNodeType);
-	}
-    if ((p = malloc(nodeSize)) == NULL)
-        yyerror("out of memory");
+		// allocate node 
+		//fprintf(stderr,"id: %d",id);
+		//fprintf(stderr,"sym[id]->type: %d",sym[id]->type);
+		//fprintf(stderr,"typeIntId: %d",typeIntId);
+		if( sym[id]->type == typeIntId ){ 
+			nodeSize = SIZEOF_NODETYPE + sizeof(intIdNodeType);
+		}else{
+			nodeSize = SIZEOF_NODETYPE + sizeof(floatIdNodeType);
+		}
+		if ((p = malloc(nodeSize)) == NULL)
+			yyerror("out of memory");
 
-    /* copy information */
-	//fprintf(stderr,"VAR %d has type %d",i,sym[i]->type);
-    p->type = sym[i]->type;
-	
-	if( p->type == typeIntId ){
-    	p->iId.i = i;
-	}else if( p->type == typeFloatId ){
-    	p->fId.i = i;
-		//fprintf(stderr,"Setting fId = %d\n",p->fId.i);
+		/* copy information */
+		//fprintf(stderr,"VAR %d has type %d",i,sym[i]->type);
+		p->type = sym[id]->type;
+		
+		if( p->type == typeIntId ){
+			p->iId.i = id;
+		}else if( p->type == typeFloatId ){
+			p->fId.i = id;
+			//fprintf(stderr,"Setting fId = %d\n",p->fId.i);
+		}else{
+			printf("Unkown error");
+			exit(1);
+		}
 	}else{
-		printf("Unkown error");
-		exit(1);
+		int i;
+		for(i = 0; i < proc_var_count; i++){
+			if(proc_sym != NULL ){
+				if(proc_sym[i]->original == id){
+					yyerror("param defined twice");
+					exit(1);
+				}
+			}else{
+				break;
+			}
+		}
+		if( proc_sym[i] == NULL ){
+			yyerror("variable used before definition");
+		}
+
+		// allocate node 
+		//fprintf(stderr,"i: %d",i);
+		//fprintf(stderr,"proc_sym[i]->type: %d",proc_sym[i]->type);
+		//fprintf(stderr,"typeIntId: %d",typeIntId);
+		if( proc_sym[i]->type == typeIntId ){ 
+			nodeSize = SIZEOF_NODETYPE + sizeof(intIdNodeType);
+		}else{
+			nodeSize = SIZEOF_NODETYPE + sizeof(floatIdNodeType);
+		}
+		if ((p = malloc(nodeSize)) == NULL)
+			yyerror("out of memory");
+
+		/* copy information */
+		//fprintf(stderr,"VAR %d has type %d",i,proc_sym[i]->type);
+		p->type = proc_sym[i]->type;
+		
+		if( p->type == typeIntId ){
+			p->iId.i = i;
+		}else if( p->type == typeFloatId ){
+			p->fId.i = i;
+			//fprintf(stderr,"Setting fId = %d\n",p->fId.i);
+		}else{
+			printf("Unkown error");
+			exit(1);
+		}
 	}
 
     return p;
@@ -203,22 +265,65 @@ nodeType *proc(int i){
 	
 	p->iId.i = i;
 
+	inside_procedure = 1;
+	proc_var_count = 0;
+
     return p;
 }
 
 nodeType *defVar(int type, int var){
-	//fprintf(stderr,"defining variable %d as type %d\n", var, type);
-	if( sym[var] == NULL ){
-		sym[var] = (variable *)malloc(sizeof(variable *));
+	if(inside_procedure == 0){
+		//fprintf(stderr,"defining variable %d as type %d\n", var, type);
+		if( sym[var] == NULL ){
+			sym[var] = (variable *)malloc(sizeof(variable *));
 
-		//fprintf(stderr,"Defining %d var as type %d\n",var,type);
-		sym[var]->type = type;
-	
-		return opr('D', 0);
+			//fprintf(stderr,"Defining %d var as type %d\n",var,type);
+			sym[var]->type = type;
+		
+			return opr('D', 0);
+		}else{
+			yyerror("variable defined twice.");
+			exit(1);
+		}
 	}else{
-		yyerror("variable defined twice.");
-		exit(1);
+		int i;
+		for(i = 0; i < proc_var_count; i++){
+			if(proc_sym != NULL ){
+				if(proc_sym[i]->original == var){
+					yyerror("param defined twice");
+					exit(1);
+				}
+			}else{
+				break;
+			}
+		}
+		
+		proc_sym[proc_var_count] = (variable *)malloc(sizeof(variable));
+		proc_sym[proc_var_count]->type = type;
+		proc_sym[proc_var_count]->original = var;
+
+		return opr('D',0);
 	}
+}
+
+nodeType *defProcParam(int type, int var, nodeType* params){
+	inside_procedure = 1;
+	int i;
+	for(i = 0; i < proc_var_count; i++){
+		if(proc_sym != NULL ){
+			if(proc_sym[i]->original == var){
+				yyerror("param defined twice");
+				exit(1);
+			}
+		}else{
+			break;
+		}
+	}
+	proc_sym[proc_var_count] = (variable *)malloc(sizeof(variable));
+	proc_sym[proc_var_count]->type = type;
+	proc_sym[proc_var_count]->original = var;
+
+	return opr('P',3,iCon(var),iCon(type),params);
 }
 
 nodeType *opr(int oper, int nops, ...) {

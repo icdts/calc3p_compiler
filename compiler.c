@@ -6,15 +6,20 @@ int pos = 1;
 int inside_prog = 0;
 int prog_vars = 0;
 int inside_proc = 0;
+
+int proc_params = 0;
 int proc_vars = 0;
+
 int first_prog_stmt = 4;
+int args = 0;
 
-struct type_stack * top_of_stack;
-struct statement * first_statement;
-struct statement * last_statement;
 
-struct proc * first_proc;
-struct proc * last_proc;
+struct type_stack * top_of_stack = NULL;
+struct statement * first_statement = NULL;
+struct statement * last_statement = NULL;
+
+struct proc * first_proc = NULL;
+struct proc * last_proc = NULL;
 
 int ex(nodeType *p) {
     int type1, type2;
@@ -25,6 +30,7 @@ int ex(nodeType *p) {
 	int start_proc;
 	char tmp_str[MAX_STMT_LEN];
 	char tmp_str2[MAX_STMT_LEN];
+	int i;
 
     if (!p) return 0;
     switch(p->type) {
@@ -69,9 +75,17 @@ int ex(nodeType *p) {
 				new_proc->position = pos;
 				new_proc->id = p->opr.op[0]->iId.i;
 
+				for(i = 0; i < sizeof(new_proc->params); i=i+1){
+					new_proc->params[i] = -1;
+				}
+
 				inside_proc = 1;
 				start_proc = pos;
 				push_asm_statement("Proc", 2, "0", "0"); //Placeholder
+				if( p->opr.nops == 4 ){
+					proc_params = 0;
+					ex(p->opr.op[3]);
+				}
 				ex(p->opr.op[1]);
 				push_asm_statement("EndProc",0);
 				first_prog_stmt = pos;
@@ -85,8 +99,9 @@ int ex(nodeType *p) {
 			}
 			break;
 		case CALL:
+			ex(p->opr.op[1]);
+			check_arguments(get_proc(p->opr.op[0]->iId.i));
 			push_asm_statement("Call",2,iargs(inside_proc),iargs(get_proc_start(p->opr.op[0]->iId.i)));
-			ex(p->opr.op[0]);
 			break;
 		case DO:
 			start_of_loop = pos;
@@ -176,12 +191,12 @@ int ex(nodeType *p) {
 				if( type1 == typeIntId ){
 					push_asm_statement("I_Value",0);
 				}
-				push_asm_statement("I_Write",1,"words:1");
+				push_asm_statement("I_Write",1,"1");
 			}else{
 				if( type1 == typeFloatId ){
 					push_asm_statement("R_Value",0);
 				}
-				push_asm_statement("R_Write",1,"words:1");
+				push_asm_statement("R_Write",1,"1");
 			}
 
             break;
@@ -316,6 +331,28 @@ int ex(nodeType *p) {
 				ex(p->opr.op[1]);
 			}
 			break;
+		case ARGS:
+			args += 1;
+			ex(p->opr.op[0]);
+			ex(p->opr.op[1]);
+			break;
+		case 'P':
+			i = (-1 * proc_vars) + -2;
+
+			if( p->opr.op[1]->iCon.value == typeFloatId ){
+				last_proc->params[proc_vars] = typeFloatId;
+				push_asm_statement("R_Variable",2,"0",iargs(proc_vars + 3));
+				push_asm_statement("R_Variable",2,"0",iargs(i));
+				push_asm_statement("R_Value",0);
+				push_asm_statement("R_Assign",1,"1");
+			}else{
+				last_proc->params[proc_vars] = typeIntId;
+				push_asm_statement("I_Variable",2,"0",iargs(proc_vars + 3));
+				push_asm_statement("I_Variable",2,"0",iargs(i));
+				push_asm_statement("I_Value",0);
+				push_asm_statement("I_Assign",1,"1");
+			}
+			proc_vars += 1;
 		case 'D':   
 			if(inside_proc == 0){
 				prog_vars += 1;	
@@ -348,18 +385,16 @@ void push_type(int t){
 
 int pop_type(){
 	if( top_of_stack == NULL ){
-		printf("Stack error\n");
-		exit(1);
+		return -1;
+	}else{
+		struct type_stack * new_top = top_of_stack->previous;
+		int ret = top_of_stack->type;
+		//free(top_of_stack);
+		top_of_stack = new_top;
+
+		
+		return ret;
 	}
-
-	struct type_stack * new_top = top_of_stack->previous;
-	int ret = top_of_stack->type;
-	free(top_of_stack);
-	top_of_stack = new_top;
-
-	//fprintf(stderr,"Popping type %d\n", ret);
-	
-	return ret;
 }
 
 void printTypeStack(){
@@ -370,14 +405,23 @@ void printTypeStack(){
 	}
 }
 
-int get_proc_start(int proc_id){
+struct proc * get_proc(int proc_id){
 	struct proc * current = first_proc;
 	while( current != NULL ){
 		if(current->id == proc_id){ 
-			return current->position;
+			return current;
 		}
 	}
-	return -1;
+	return NULL;
+}
+
+int get_proc_start(int proc_id){
+	struct proc * current = get_proc(proc_id);
+	if( current == NULL ){
+		return -1;
+	}else{
+		return current->position;
+	}
 }
 
 struct statement * push_asm_statement(char* cmd, int argc, ...){
@@ -655,5 +699,28 @@ int is_real_op(int type1, int type2){
 		return 1;
 	}else{
 		return 0;
+	}
+}
+
+void check_arguments(struct proc * p){
+	int i = 0;
+	while( args != 0 ){
+		int type = pop_type();
+		if( p->params[i] != type ){
+			if( p->params[i] == typeIntId ){
+				if( type == typeFloatId ){
+					//convert
+				}
+			}else if(p->params[i] == typeFloatId){
+				if( type == typeIntId ){
+					//convert
+				}
+			}else{
+				yyerror("mis matched types");
+				exit(1);
+			}
+		}
+		args = args - 1;
+		i = i + 1;
 	}
 }

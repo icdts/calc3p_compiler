@@ -5,6 +5,7 @@ typedef enum { typeIntCon, typeFloatCon, typeIntId, typeFloatId, typeOpr, typePr
 
 typedef struct {
 	int type;
+	int original;
 } variable;
 
 /* constants */
@@ -51,3 +52,4 @@ typedef struct nodeTypeTag {
 } nodeType;
 
 extern variable *sym[99];
+extern variable *proc_sym[99];
