@@ -10,6 +10,8 @@ int inside_proc = 0;
 int proc_params = 0;
 int proc_vars = 0;
 
+int calling_proc = -1;
+
 int first_prog_stmt = 4;
 int args = 0;
 
@@ -90,7 +92,9 @@ int ex(nodeType *p) {
 				push_asm_statement("EndProc",0);
 				first_prog_stmt = pos;
 				replace_asm_statement(start_proc,"Proc",2,iargs(proc_vars),iargs(start_proc+3));
-				
+			
+				while( pop_type() != -1 );
+
 				inside_proc = 0;
 				ex(p->opr.op[2]);
 			}else{
@@ -99,9 +103,45 @@ int ex(nodeType *p) {
 			}
 			break;
 		case CALL:
+			calling_proc = p->opr.op[0]->iId.i;
 			ex(p->opr.op[1]);
-			check_arguments(get_proc(p->opr.op[0]->iId.i));
-			push_asm_statement("Call",2,iargs(inside_proc),iargs(get_proc_start(p->opr.op[0]->iId.i)));
+			push_asm_statement("Call",2,iargs(inside_proc),iargs(get_proc_start(calling_proc)));
+			break;
+		case ARGS:
+			ex(p->opr.op[0]);
+			type1 = pop_type();
+			type2 = get_proc(calling_proc)->params[args];
+			//fprintf(stderr,"%d =? %d\n", type1, get_proc(calling_proc)->params[args]);
+			
+			if(type1 == typeFloatId){
+				push_asm_statement("R_Value",0);
+				type1 = typeFloatCon;
+			}else if(type1 == typeIntId){
+				push_asm_statement("I_Value",0);
+				type1 = typeIntCon;
+			}
+
+			if(type2 == typeIntId){
+				if(type1 == typeFloatCon){
+					push_asm_statement("R_To_I",0);
+					type1 = typeIntCon;
+				}	
+			}else if(type2 == typeFloatId){
+				if(type1 == typeIntCon){
+					push_asm_statement("I_To_R",0);
+					type1 = typeFloatCon;
+				}
+			}
+
+			if((type1 == typeFloatCon && type2 == typeFloatId) || (type1 == typeIntCon && type2 == typeIntId)){
+				if( p->opr.op[1] != NULL ){
+					args += 1;
+					ex(p->opr.op[1]);
+				}
+			}else{
+				yyerror("Argument error");
+				exit(1);
+			}
 			break;
 		case DO:
 			start_of_loop = pos;
@@ -331,11 +371,6 @@ int ex(nodeType *p) {
 				ex(p->opr.op[1]);
 			}
 			break;
-		case ARGS:
-			args += 1;
-			ex(p->opr.op[0]);
-			ex(p->opr.op[1]);
-			break;
 		case 'P':
 			i = (-1 * proc_vars) + -2;
 
@@ -375,26 +410,22 @@ void push_type(int t){
 	//fprintf(stderr,"Pushing type %d\n", t);
 
 	new->type = t;
-	if( top_of_stack == NULL ){
-		top_of_stack = new;
-	}else{
-		new->previous = top_of_stack;
-		top_of_stack = new;
-	}
+	new->previous = top_of_stack;
+	top_of_stack = new;
 }
 
 int pop_type(){
+	int ret;
 	if( top_of_stack == NULL ){
-		return -1;
+		ret = -1;
 	}else{
 		struct type_stack * new_top = top_of_stack->previous;
-		int ret = top_of_stack->type;
+		ret = top_of_stack->type;
 		//free(top_of_stack);
 		top_of_stack = new_top;
-
-		
-		return ret;
 	}
+	//fprintf(stderr,"Popping %d\n", ret);
+	return ret;
 }
 
 void printTypeStack(){
@@ -701,7 +732,7 @@ int is_real_op(int type1, int type2){
 		return 0;
 	}
 }
-
+/*
 void check_arguments(struct proc * p){
 	int i = 0;
 	while( args != 0 ){
@@ -724,3 +755,4 @@ void check_arguments(struct proc * p){
 		i = i + 1;
 	}
 }
+*/

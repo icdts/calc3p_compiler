@@ -2,4 +2,4 @@ procedure test1(int a) {
 	print(a);
 }
 print(1);
-test1();
+test1(1);

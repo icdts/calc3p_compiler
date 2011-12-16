@@ -101,7 +101,7 @@ stmt:
 		| VARIABLE '(' arg_list ')'									{ $$ = opr(CALL, 2, proc($1), $3); }
         ;
 arg_list:
-		  expr 					{ $$ = opr(ARGS,1,$1,NULL); }
+		  expr 					{ $$ = opr(ARGS,2,$1,NULL); }
 		| expr ',' arg_list 	{ $$ = opr(ARGS,2,$1,$3); }
 
 stmt_list:
