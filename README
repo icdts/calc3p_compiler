@@ -18,6 +18,13 @@ Things I implemented:
 	Semantic analysis (types are automatically converted, handled with a type stack using the types from the symbol table)
 	for, do-while, do-until, while loops
 	Math assignment operators ("+=" and the like.  Was done to make the for loop easier to code, but is a nice thing to have anyways.)	
+	Automatic type conversion and type checking
+	Both kinds of prodecures (with/without params)
+	Both kinds of functions (with/without params)
 
-The "tests" directory contains tests I ran.  The .code files are the test itself, the .output is the expected output.  I just used vimdiff
-	to compare.
+Known bugs:
+	Scoping only works for procedures/functions, not blocks.  I didn't realize I needed to do this until a few minutes ago.  
+		Just didn't read carefully enough I suppose.
+
+Automated test script "test.sh" runs all of my tests.  I could not for the life of me get the pstack/api program to work, so I just did
+	diffs of the pcode I expected to come out.  Took a lot longer to write the tests this way, but oh well.

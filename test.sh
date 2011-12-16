@@ -53,3 +53,4 @@ done
 
 echo "--> Testing has finished.  Cleaning up."
 rm calc3p.out
+make clean

@@ -6,4 +6,4 @@ y.tab.c: y.tab.h
 y.tab.h: yacc.y
 	yacc -d yacc.y
 clean:
-	rm -rf y.tab.h y.tab.c lex.yy.c wat
+	rm -rf y.tab.h y.tab.c lex.yy.c calc3p 
