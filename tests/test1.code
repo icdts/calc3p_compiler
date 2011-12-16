@@ -10,7 +10,7 @@
 	<=
 	print
 */
-{
+//{
 	int a;
 	a = 0; //basic assignment
 	a = 1.5; //Should automatically convert
@@ -18,7 +18,7 @@
 		print a; /* if statement
 		whee
 		*/
-		print 1;
+		print(1);
 	}
 	float b;
 	b = 0; //should automatically convert
@@ -30,4 +30,4 @@
 	}
 	print b >= a;
 	print b <= a;
-}
+//}

@@ -15,6 +15,7 @@ int calling_proc = -1;
 int first_prog_stmt = 4;
 int args = 0;
 
+int saw_return;
 
 struct type_stack * top_of_stack = NULL;
 struct statement * first_statement = NULL;
@@ -76,6 +77,7 @@ int ex(nodeType *p) {
 				}
 				new_proc->position = pos;
 				new_proc->id = p->opr.op[0]->iId.i;
+				new_proc->return_value = -1;
 
 				for(i = 0; i < sizeof(new_proc->params); i=i+1){
 					new_proc->params[i] = -1;
@@ -87,6 +89,7 @@ int ex(nodeType *p) {
 				if( p->opr.nops == 4 ){
 					proc_params = 0;
 					ex(p->opr.op[3]);
+					new_proc->return_pos = (-1 * proc_vars) + -3;
 				}
 				ex(p->opr.op[1]);
 				push_asm_statement("EndProc",0);
@@ -102,10 +105,76 @@ int ex(nodeType *p) {
 				exit(1);
 			}
 			break;
+		case FUNC:
+			if(inside_proc == 0 ){
+				saw_return = 0;
+
+				//push a proc onto list
+				struct proc * new_proc = (struct proc *)malloc(sizeof(struct proc));
+				if(first_proc == NULL){
+					first_proc = new_proc;
+				}else{
+					last_proc->next_proc = new_proc;
+				}
+				last_proc = new_proc;
+
+				//set its start position and id
+				new_proc->position = pos;
+				new_proc->id = p->opr.op[1]->iId.i;
+
+				//initialize params to -1
+				for(i = 0; i < sizeof(new_proc->params); i=i+1){
+					new_proc->params[i] = -1;
+				}
+
+				//we're now inside a procedure
+				inside_proc = 1;
+				start_proc = pos;
+				push_asm_statement("Proc", 2, "0", "0"); //Placeholder
+
+				//if params, take care of them
+				if( p->opr.nops == 5 ){
+					proc_params = 0;
+					ex(p->opr.op[4]);
+				}
+				new_proc->return_pos = (-1 * proc_vars) + -3;
+				new_proc->return_value = p->opr.op[0]->iCon.value;
+				if(new_proc->return_value == typeIntId){ 
+					new_proc->return_value = typeIntCon;
+				}else{
+					new_proc->return_value = typeFloatCon;
+				}
+
+				//execute function statements
+				ex(p->opr.op[2]);
+			
+				push_asm_statement("EndProc",0);
+				first_prog_stmt = pos;
+				replace_asm_statement(start_proc,"Proc",2,iargs(proc_vars),iargs(start_proc+3));
+				
+				if(saw_return == 0){
+					yyerror("Function without return statement");
+					exit(1);
+				}
+
+				while( pop_type() != -1 );
+
+				inside_proc = 0;
+
+				ex(p->opr.op[3]);
+			}else{
+				fprintf(stderr,"%s\n", "Cannot nest Procedure definitions");
+				exit(1);
+			}
+			break;
 		case CALL:
 			calling_proc = p->opr.op[0]->iId.i;
 			ex(p->opr.op[1]);
 			push_asm_statement("Call",2,iargs(inside_proc),iargs(get_proc_start(calling_proc)));
+			type1 = get_proc(calling_proc)->return_value;
+			if( type1 != -1 ){
+				push_type(type1);
+			}
 			break;
 		case ARGS:
 			ex(p->opr.op[0]);
@@ -141,6 +210,29 @@ int ex(nodeType *p) {
 			}else{
 				yyerror("Argument error");
 				exit(1);
+			}
+			break;
+		case RETURN:
+			if( inside_proc == 1 ){
+				saw_return = 1;
+				ex(p->opr.op[0]);
+				type1 = pop_type();
+
+				type2 = last_proc->return_value;
+
+				if(type2 == typeIntCon){
+					if( type1 == typeFloatCon ){
+						push_asm_statement("R_To_I",0);
+					}
+					push_asm_statement("I_Variable",2, "0", iargs(last_proc->return_pos));
+					push_asm_statement("I_Write",1, "1");
+				}else{
+					if( type1 == typeIntCon ){
+						push_asm_statement("I_To_R",0);
+					}
+					push_asm_statement("R_Variable",2, "0", iargs(last_proc->return_pos));
+					push_asm_statement("R_Write",1, "1");
+				}
 			}
 			break;
 		case DO:

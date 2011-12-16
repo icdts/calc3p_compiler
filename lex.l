@@ -25,6 +25,7 @@ int current_next_index = 0;
 "print"         return PRINT;
 "procedure"	{ return PROC; }
 "function" { return FUNC; }
+"return" { return RETURN; }
 "int"		{
 				yylval.iType = typeIntId; 
 				return TYPE;

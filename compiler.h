@@ -18,6 +18,8 @@ struct proc {
 	int id;
 	int position;
 	int params[50];
+	int return_value;
+	int return_pos;
 	struct proc * next_proc;
 };
 

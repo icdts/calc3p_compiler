@@ -39,16 +39,19 @@ int inside_procedure;
 %token <fValue> FLOAT
 %token <sIndex> VARIABLE
 %token <iType> TYPE
-%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG PROC FUNC CALL ARGS
+%token DO UNTIL WHILE IF PRINT FOR STEP TO COMMENT PROG PROC FUNC CALL ARGS 
 %nonassoc IFX
 %nonassoc ELSE
 %nonassoc PROC_STMT
 %nonassoc PROC_ARG_STMT
+%nonassoc FUNC_STMT
+%nonassoc FUNC_ARG_STMT
 
 %left GE LE EQ NE '>' '<'
 %left '+' '-'
 %left '*' '/' '%'
 %left PluE MinE MulE DivE ModE
+%left RETURN
 %nonassoc UMINUS
 
 %type <nPtr> stmt expr stmt_list def_var function param_list arg_list
@@ -69,6 +72,14 @@ function:
 																							$$ = opr(PROC, 4, proc($2), $7, $9, $4); 
 																							inside_procedure = 0; 
 																						} 
+		| FUNC TYPE VARIABLE '(' ')' '{' stmt '}' function %prec FUNC_STMT	{
+																				$$ = opr(FUNC, 4, iCon($2), proc($3), $7, $9); 
+																				inside_procedure = 0;
+																			}
+		| FUNC TYPE VARIABLE '(' param_list ')' '{' stmt '}' function %prec FUNC_ARG_STMT 	{
+																								$$ = opr(FUNC, 5, iCon($2), proc($3), $8, $10, $5);
+																								inside_procedure = 0;
+																							}
         | /* NULL */ 						{ $$ = opr(';', 2, NULL, NULL); }
         ;
 param_list:
@@ -83,7 +94,7 @@ stmt:
 		| COMMENT													{ $$ = opr('c', 0); }
         | expr ';'                       							{ $$ = $1; }
 		| def_var ';'					 							{ $$ = $1; }
-        | PRINT '(' expr ')' ';'                							{ $$ = opr(PRINT, 1, $3); }
+        | PRINT expr ';'			              					{ $$ = opr(PRINT, 1, $2); }
         | VARIABLE '=' expr ';'         				 			{ $$ = opr('=', 2, id($1), $3); }
         | VARIABLE PluE expr ';'         				 			{ $$ = opr(PluE, 2, id($1), $3); }
         | VARIABLE MinE expr ';'         				 			{ $$ = opr(MinE, 2, id($1), $3); }
@@ -99,6 +110,7 @@ stmt:
         | '{' stmt_list '}'											{ $$ = $2; }
 		| VARIABLE '(' ')'											{ $$ = opr(CALL, 2, proc($1), NULL); }
 		| VARIABLE '(' arg_list ')'									{ $$ = opr(CALL, 2, proc($1), $3); }
+		| RETURN expr ';'												{ $$ = opr(RETURN, 1, $2); }
         ;
 arg_list:
 		  expr 					{ $$ = opr(ARGS,2,$1,NULL); }
