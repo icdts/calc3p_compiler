@@ -29,11 +29,13 @@ int current_next_index = 0;
 "int"		{
 				yylval.iType = typeIntId; 
 				return TYPE;
-			};
+			}
 "float"		{
 				yylval.iType = typeFloatId; 
 				return TYPE;
-			};
+			}
+"begin" 		return '{';
+"end"			return '}';
 "for"			return FOR;
 ">="            return GE;
 "<="            return LE;
