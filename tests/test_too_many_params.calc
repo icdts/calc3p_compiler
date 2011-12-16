@@ -1,0 +1,4 @@
+function int test1(int a, int b){
+	return a + b;
+}
+print test1(1,2,3);

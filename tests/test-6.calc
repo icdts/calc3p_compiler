@@ -1,0 +1,20 @@
+/**
+ *  Testing multiple declerations seperated by commas
+ */
+
+int i,j,lmnop;
+i=0;
+j=1;
+lmnop=34567;
+print i;
+print j;
+print lmnop;
+
+// Test inline assignment
+int k=3;
+
+int z=4, test_var=12;
+
+print k;
+print z;
+print test_var;

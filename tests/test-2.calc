@@ -1,0 +1,33 @@
+/**
+ *  This test is designed to calculate sin(x) where
+ *
+ */
+
+float x;
+x = 3.0;
+
+print ( x
+  - ( (x*x*x)/(3.0*2.0*1.0) )
+  + ( (x*x*x*x*x)/(5.0*4.0*3.0*2.0*1.0) )
+  - ( (x*x*x*x*x*x*x)/(7.0*6.0*5.0*4.0*3.0*2.0*1.0) )
+  + ( (x*x*x*x*x*x*x*x*x) / (9.0*8.0*7.0*6.0*5.0*4.0*3.0*2.0*1.0) )
+);
+
+/**
+ *  This block calculates x^10 and tests
+ *  crazy variable names
+ */
+begin
+  int x;
+  int out_put;
+  int up2;
+  x = 3;
+  out_put = 3;
+  up2 = 10;
+  int i;
+  for ( i=1 step 1 to up2-1)
+  {
+    out_put = out_put*x;
+  }
+  print out_put;
+end

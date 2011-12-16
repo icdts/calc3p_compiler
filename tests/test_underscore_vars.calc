@@ -1,0 +1,4 @@
+/* Testing names with underscores */
+int a_b = 0;
+a_b = 1;
+print a_b;

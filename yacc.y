@@ -11,7 +11,7 @@ nodeType *id(int i);
 nodeType *proc(int i);
 nodeType *iCon(int value);
 nodeType *fCon(float value);
-nodeType *defVar(int type, int var);
+nodeType *defVar(int type, int var, nodeType* expr);
 nodeType *defProcParam(int type, int var, nodeType* params);
 void freeNode(nodeType *p);
 int ex(nodeType *p);
@@ -87,7 +87,8 @@ param_list:
 		| TYPE VARIABLE ',' param_list	{ $$ = defProcParam($1,$2,$4); }
 		;
 def_var: 
-		TYPE VARIABLE				 { $$ = defVar($1,$2); }
+		  TYPE VARIABLE				{ $$ = defVar($1,$2,NULL); }
+		| TYPE VARIABLE '=' expr	{ $$ = defVar($1,$2,$4); }
 		;
 stmt:
         ';'															{ $$ = opr(';', 2, NULL, NULL); }
@@ -110,9 +111,6 @@ stmt:
         | '{' stmt_list '}'											{ $$ = $2; }
 		| RETURN expr ';'												{ $$ = opr(RETURN, 1, $2); }
         ;
-arg_list:
-		  expr 					{ $$ = opr(ARGS,2,$1,NULL); }
-		| expr ',' arg_list 	{ $$ = opr(ARGS,2,$1,$3); }
 
 stmt_list:
           stmt                  { $$ = $1; }
@@ -140,6 +138,10 @@ expr:
 		| VARIABLE '(' arg_list ')'	{ $$ = opr(CALL, 2, proc($1), $3); }
         ;
 
+arg_list:
+		  expr 					{ $$ = opr(ARGS,2,$1,NULL); }
+		| expr ',' arg_list 	{ $$ = opr(ARGS,2,$1,$3); }
+		;
 %%
 
 #define SIZEOF_NODETYPE ((char *)&p->iCon - (char *)p)
@@ -185,6 +187,7 @@ nodeType *id(int id) {
 	if( inside_procedure == 0 ){
 		if( sym[id] == NULL ){
 			yyerror("variable used before definition");
+			exit(1);
 		}
 
 		// allocate node 
@@ -283,7 +286,7 @@ nodeType *proc(int i){
     return p;
 }
 
-nodeType *defVar(int type, int var){
+nodeType *defVar(int type, int var, nodeType * expr){
 	if(inside_procedure == 0){
 		//fprintf(stderr,"defining variable %d as type %d\n", var, type);
 		if( sym[var] == NULL ){
@@ -292,7 +295,7 @@ nodeType *defVar(int type, int var){
 			//fprintf(stderr,"Defining %d var as type %d\n",var,type);
 			sym[var]->type = type;
 		
-			return opr('D', 0);
+			return opr('D', 2, id(var), expr);
 		}else{
 			yyerror("variable defined twice.");
 			exit(1);
@@ -314,7 +317,7 @@ nodeType *defVar(int type, int var){
 		proc_sym[proc_var_count]->type = type;
 		proc_sym[proc_var_count]->original = var;
 
-		return opr('D',0);
+		return opr('D', 2, id(proc_var_count), expr);
 	}
 }
 

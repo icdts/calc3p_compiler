@@ -1,0 +1,16 @@
+/**
+ *  This is another syntax checking test.
+ *  There is a missing semicolon before an end
+ *  block...but there also a missing semicolon
+ *  before a declaration! We should get the
+ *  declaration error first...
+ */
+
+begin
+  int i;
+  i=4;
+  print i // <--- Missing semi-colon, what is this, Ruby?
+  float k;
+  k = 3.2
+  print k;
+end

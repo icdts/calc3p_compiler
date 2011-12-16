@@ -1,0 +1,21 @@
+1       Prog 2 42
+4       Proc 0 7
+7       I_Constant 2
+9       I_Write 1
+11      EndProc
+12      Proc 0 15
+15      I_Constant 4
+17      I_Write 1
+19      EndProc
+20      Proc 0 23
+23      I_Constant 1
+25      I_Write 1
+27      I_Constant 0
+29      Call 1 4
+32      I_Constant 3
+34      I_Write 1
+36      I_Constant 0
+38      Call 1 12
+41      EndProc
+42      Call 0 20
+45      EndProg

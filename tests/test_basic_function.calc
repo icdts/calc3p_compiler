@@ -1,4 +1,4 @@
 function int asdf(){
 	return 1;
 }
-//print asdf();
+print asdf();

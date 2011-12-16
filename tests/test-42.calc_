@@ -1,0 +1,7 @@
+/**
+ *  This is a test that has wrong diff, designed to
+ *  test the shell script that does the automatic testing
+ */
+ int i;
+ i=5;
+ print i;

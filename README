@@ -25,6 +25,8 @@ Things I implemented:
 Known bugs:
 	Scoping only works for procedures/functions, not blocks.  I didn't realize I needed to do this until a few minutes ago.  
 		Just didn't read carefully enough I suppose.
+	Multiple params seems to be broken, didn't have time to fix
 
-Automated test script "test.sh" runs all of my tests.  I could not for the life of me get the pstack/api program to work, so I just did
-	diffs of the pcode I expected to come out.  Took a lot longer to write the tests this way, but oh well.
+Automated test script "test.sh" runs all of my tests.  I could not for the life of me get the pstack/api program to work (the build
+	script doesn't seem to work, says there is a file missing...), so I just did diffs of the pcode I expected to come out.  Took a lot 
+	longer to write the tests this way, but oh well.

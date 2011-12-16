@@ -17,6 +17,8 @@ int args = 0;
 
 int saw_return;
 
+
+
 struct type_stack * top_of_stack = NULL;
 struct statement * first_statement = NULL;
 struct statement * last_statement = NULL;
@@ -34,38 +36,43 @@ int ex(nodeType *p) {
 	char tmp_str[MAX_STMT_LEN];
 	char tmp_str2[MAX_STMT_LEN];
 	int i;
-
+	///*fprintf(stderr,%d\n,p->type);*/
     if (!p) return 0;
     switch(p->type) {
 	printTypeStack();
     case typeIntCon:       
-		push_asm_statement("I_Constant",1,iargs(p->iCon.value));
+		/*fprintf(stderr,Int constant\n);*/
+		push_asm_statement(I_Constant,2,0,p->iCon.value);
 		push_type(typeIntCon);	
         break;
 	case typeFloatCon:
-		push_asm_statement("R_Constant",1,fargs(p->fCon.value));
+		/*fprintf(stderr,Float constant\n);*/
+		push_asm_statement(R_Constant,2,1,p->fCon.value);
 		push_type(typeFloatCon);
         break;
     case typeIntId:        
-		push_asm_statement("I_Variable",2,"0",iargs(p->iId.i + 3));
+		/*fprintf(stderr,Int Variable\n);*/
+		push_asm_statement(I_Variable,4,0,0,0,p->iId.i + 3);
 		push_type(typeIntId);
 		break;
 	case typeFloatId:
-		push_asm_statement("R_Variable",2,"0",iargs(p->fId.i + 3));
+		/*fprintf(stderr,Float Variable\n);*/
+		push_asm_statement(R_Variable,4,0,0,0,p->fId.i + 3);
 		push_type(typeFloatId);
         break;
     case typeOpr:
         switch(p->opr.oper) {
 		case PROG:
+			/*fprintf(stderr,Prog Call\n);*/
 			start_prog = pos;
 			inside_prog = 1;
-			push_asm_statement("Prog", 2, "0","4"); //Placeholder
-
+			push_asm_statement(I_Prog,4,0,0,0,4); //Placeholder
 			ex(p->opr.op[0]);
-			push_asm_statement("EndProg",0);
-			replace_asm_statement(start_prog,"Prog", 2, iargs(prog_vars), iargs(first_prog_stmt));
+			push_asm_statement(I_EndProg,0);
+			replace_asm_statement(start_prog,I_Prog, 4, 0, prog_vars, 0, first_prog_stmt);
 			break;
 		case PROC:
+			/*fprintf(stderr,Proc Def\n);*/
 			if(inside_proc == 0 ){
 				struct proc * new_proc = (struct proc *)malloc(sizeof(struct proc));
 				if(first_proc == NULL){
@@ -85,27 +92,28 @@ int ex(nodeType *p) {
 
 				inside_proc = 1;
 				start_proc = pos;
-				push_asm_statement("Proc", 2, "0", "0"); //Placeholder
+				push_asm_statement(I_Proc, 4, 0,0,0,0); //Placeholder
 				if( p->opr.nops == 4 ){
 					proc_params = 0;
 					ex(p->opr.op[3]);
 					new_proc->return_pos = (-1 * proc_vars) + -3;
 				}
 				ex(p->opr.op[1]);
-				push_asm_statement("EndProc",0);
+				push_asm_statement(I_EndProc,0);
 				first_prog_stmt = pos;
-				replace_asm_statement(start_proc,"Proc",2,iargs(proc_vars),iargs(start_proc+3));
+				replace_asm_statement(start_proc,I_Proc,4,0,proc_vars,0,start_proc+3);
 			
 				while( pop_type() != -1 );
 
 				inside_proc = 0;
 				ex(p->opr.op[2]);
 			}else{
-				yyerror("%s\n", "Cannot nest Procedure definitions");
+				yyerror("Cannot nest Procedure definitions");
 				exit(1);
 			}
 			break;
 		case FUNC:
+			/*fprintf(stderr,Func Def\n);*/
 			if(inside_proc == 0 ){
 				saw_return = 0;
 
@@ -130,7 +138,7 @@ int ex(nodeType *p) {
 				//we're now inside a procedure
 				inside_proc = 1;
 				start_proc = pos;
-				push_asm_statement("Proc", 2, "0", "0"); //Placeholder
+				push_asm_statement(I_Proc, 4, 0, 0, 0, 0); //Placeholder
 
 				//if params, take care of them
 				if( p->opr.nops == 5 ){
@@ -148,9 +156,9 @@ int ex(nodeType *p) {
 				//execute function statements
 				ex(p->opr.op[2]);
 			
-				push_asm_statement("EndProc",0);
+				push_asm_statement(I_EndProc,0);
 				first_prog_stmt = pos;
-				replace_asm_statement(start_proc,"Proc",2,iargs(proc_vars),iargs(start_proc+3));
+				replace_asm_statement(start_proc,I_Proc,4,0,proc_vars,0,start_proc+3);
 				
 				if(saw_return == 0){
 					yyerror("Function without return statement");
@@ -168,36 +176,42 @@ int ex(nodeType *p) {
 			}
 			break;
 		case CALL:
+			/*fprintf(stderr,Call of func/proc\n);*/
 			calling_proc = p->opr.op[0]->iId.i;
 			ex(p->opr.op[1]);
-			push_asm_statement("Call",2,iargs(inside_proc),iargs(get_proc_start(calling_proc)));
+			if(p->opr.op[1] == NULL && get_proc(calling_proc)->params[0] != -1){
+				yyerror("Insufficient arguments");
+				exit(1);
+			}
+			push_asm_statement(I_Call,4,0,inside_proc,0,get_proc_start(calling_proc));
 			type1 = get_proc(calling_proc)->return_value;
 			if( type1 != -1 ){
 				push_type(type1);
 			}
 			break;
 		case ARGS:
+			/*fprintf(stderr,Parse Arg\n);*/
 			ex(p->opr.op[0]);
 			type1 = pop_type();
 			type2 = get_proc(calling_proc)->params[args];
-			//fprintf(stderr,"%d =? %d\n", type1, get_proc(calling_proc)->params[args]);
+			//fprintf(stderr,%d =? %d\n, type1, get_proc(calling_proc)->params[args]);
 			
 			if(type1 == typeFloatId){
-				push_asm_statement("R_Value",0);
+				push_asm_statement(R_Value,0);
 				type1 = typeFloatCon;
 			}else if(type1 == typeIntId){
-				push_asm_statement("I_Value",0);
+				push_asm_statement(I_Value,0);
 				type1 = typeIntCon;
 			}
 
 			if(type2 == typeIntId){
 				if(type1 == typeFloatCon){
-					push_asm_statement("R_To_I",0);
+					push_asm_statement(R_To_I,0);
 					type1 = typeIntCon;
 				}	
 			}else if(type2 == typeFloatId){
 				if(type1 == typeIntCon){
-					push_asm_statement("I_To_R",0);
+					push_asm_statement(I_To_R,0);
 					type1 = typeFloatCon;
 				}
 			}
@@ -213,6 +227,7 @@ int ex(nodeType *p) {
 			}
 			break;
 		case RETURN:
+			/*fprintf(stderr,Return\n);*/
 			if( inside_proc == 1 ){
 				saw_return = 1;
 				ex(p->opr.op[0]);
@@ -222,44 +237,48 @@ int ex(nodeType *p) {
 
 				if(type2 == typeIntCon){
 					if( type1 == typeFloatCon ){
-						push_asm_statement("R_To_I",0);
+						push_asm_statement(R_To_I,0);
 					}
-					push_asm_statement("I_Variable",2, "0", iargs(last_proc->return_pos));
-					push_asm_statement("I_Write",1, "1");
+					push_asm_statement(I_Variable,4,0,0,0,last_proc->return_pos);
+					push_asm_statement(I_Write,2,0,1);
 				}else{
 					if( type1 == typeIntCon ){
-						push_asm_statement("I_To_R",0);
+						push_asm_statement(I_To_R,0);
 					}
-					push_asm_statement("R_Variable",2, "0", iargs(last_proc->return_pos));
-					push_asm_statement("R_Write",1, "1");
+					push_asm_statement(R_Variable,4,0,0,0,last_proc->return_pos);
+					push_asm_statement(R_Write,2,0,1);
 				}
 			}
 			break;
 		case DO:
+			/*fprintf(stderr,Do\n);*/
 			start_of_loop = pos;
 			ex(p->opr.op[0]); //stmts
 			ex(p->opr.op[1]); //condition
-			push_asm_statement("Jmp_if_True",1,iargs(pos+2));
+			push_asm_statement(I_Jmp_If_True,2,0,pos+2);
 			break;
 		case UNTIL:
+			/*fprintf(stderr,Until\n);*/
 			start_of_loop = pos;
 			ex(p->opr.op[0]); //stmts
 			ex(p->opr.op[1]); //condition
-			push_asm_statement("Jmp_if_False",1,iargs(pos+2));
+			push_asm_statement(I_Jmp_If_False,2,0,pos+2);
 			break;
         case WHILE:
+			/*fprintf(stderr,While\n);*/
 			start_of_loop = pos;
             ex(p->opr.op[0]);
 
 			jmp_pos = pos;
-			push_asm_statement("Jmp_if_True",1,"null"); //placeholder
+			push_asm_statement(I_Jmp_If_True,2,0,0); //placeholder
 
             ex(p->opr.op[1]);
-			push_asm_statement("Jmp",1,iargs(start_of_loop));
+			push_asm_statement(I_Jmp,2,0,start_of_loop);
 
-			replace_asm_statement(jmp_pos,"Jmp_if_True",1,iargs(pos)); //replace placeholder
+			replace_asm_statement(jmp_pos,I_Jmp_If_True,2,0,pos); //replace placeholder
             break;
 		case FOR:
+			/*fprintf(stderr,For\n);*/
 			//initial assignment
 			assignment(p->opr.op[0],p->opr.op[1]);
 
@@ -270,7 +289,7 @@ int ex(nodeType *p) {
 				
 			//Create placeholder jump
 			jmp_pos = pos;
-			push_asm_statement("Jmp_if_True",1,"null");
+			push_asm_statement(I_Jmp_If_True,2,0,0);
 			
 			//execute stmt
             ex(p->opr.op[4]);
@@ -279,17 +298,18 @@ int ex(nodeType *p) {
             math_assignment(p->opr.op[0],p->opr.op[1],"Add"); 
 
 			//Go back to condition
-			push_asm_statement("Jmp",1,iargs(start_of_loop));
+			push_asm_statement(I_Jmp,2,0,start_of_loop);
 
 			//replace placeholder with right jump position
-			replace_asm_statement(jmp_pos,"Jmp_if_True",1,iargs(pos));
+			replace_asm_statement(jmp_pos,I_Jmp_If_True,2,0,pos);
 			break;
         case IF:
+			/*fprintf(stderr,If\n);*/
             ex(p->opr.op[0]);
 			
 			//placeholder jump for skipping if stmt
 			jmp_pos = pos;
-			push_asm_statement("Jmp_if_True",1,"null");
+			push_asm_statement(I_Jmp_If_True,2,0,0);
 
 			//execute if part
 			ex(p->opr.op[1]);
@@ -299,12 +319,12 @@ int ex(nodeType *p) {
 			if (p->opr.nops > 2) {
 				//placeholder jump for skipping else
 				jmp_pos2 = pos;
-				push_asm_statement("Jmp",1,"null");
+				push_asm_statement(I_Jmp,2,0,0);
 
             } 
 			
 			//replace placeholder
-			replace_asm_statement(jmp_pos,"Jmp_if_False",1,iargs(pos));
+			replace_asm_statement(jmp_pos,I_Jmp_If_False,2,0,pos);
 
 			//if there's an else
 			if (p->opr.nops > 2) {
@@ -312,27 +332,29 @@ int ex(nodeType *p) {
 				ex(p->opr.op[2]);
 				
 				//replace placeholder for skipping else
-				replace_asm_statement(jmp_pos,"Jmp",1,iargs(pos));
+				replace_asm_statement(jmp_pos,I_Jmp,2,0,pos);
             } 
 			break;
         case PRINT:     
+			/*fprintf(stderr,Print\n);*/
             ex(p->opr.op[0]);
 			type1 = pop_type();
 
 			if( type1 == typeIntCon || type1 == typeIntId ){
 				if( type1 == typeIntId ){
-					push_asm_statement("I_Value",0);
+					push_asm_statement(I_Value,0);
 				}
-				push_asm_statement("I_Write",1,"1");
+				push_asm_statement(I_Write,2,0,1);
 			}else{
 				if( type1 == typeFloatId ){
-					push_asm_statement("R_Value",0);
+					push_asm_statement(R_Value,0);
 				}
-				push_asm_statement("R_Write",1,"1");
+				push_asm_statement(R_Write,2,0,1);
 			}
 
             break;
         case UMINUS:    
+			/*fprintf(stderr,negation\n);*/
             ex(p->opr.op[0]);
 			type1 = pop_type();
 
@@ -341,155 +363,155 @@ int ex(nodeType *p) {
 			}
 
 			if(type1 == typeIntCon){
-				push_asm_statement("I_Minus",0);
+				push_asm_statement(I_Minus,0);
 				push_type(typeIntCon);
 			}else if(type1 == typeFloatCon){
-				push_asm_statement("R_Minus",0);
+				push_asm_statement(R_Minus,0);
 				push_type(typeFloatCon);
 			}else{
-				printf("Can only negate expressions that have a value");
+				yyerror("Can only negate expressions that have a value");
 				exit(1);
 			}
             break;
 		case '=':
+			/*fprintf(stderr,assignment\n);*/
 			assignment(p->opr.op[0],p->opr.op[1]);
 			break;
 		case PluE:
+			/*fprintf(stderr,+=\n);*/
 			math_assignment(p->opr.op[0],p->opr.op[1],"Add");
 			break;
 		case MinE:
+			/*fprintf(stderr,-=\n);*/
 			math_assignment(p->opr.op[0],p->opr.op[1],"Subtract");
 			break;
 		case MulE:
+			/*fprintf(stderr,*=\n);*/
 			math_assignment(p->opr.op[0],p->opr.op[1],"Multiply");
 			break;
 		case DivE:
+			/*fprintf(stderr,\\=\n);*/
 			math_assignment(p->opr.op[0],p->opr.op[1],"Divide");
 			break;
 		case ModE:
+			/*fprintf(stderr,%=\n);*/
 			math_assignment(p->opr.op[0],p->opr.op[1],"Modulo");
 			break;
 		case '+':  
+			/*fprintf(stderr,+\n);*/
 			math_operator(p->opr.op[0],p->opr.op[1],"Add");
 			break;
 		case '-':  
+			/*fprintf(stderr,-\n);*/
 			math_operator(p->opr.op[0],p->opr.op[1],"Subtract");
 			break; 
 		case '*':
+			/*fprintf(stderr,*\n);*/
 			math_operator(p->opr.op[0],p->opr.op[1],"Multiply");
 			break;
 		case '/':
+			/*fprintf(stderr,\\\n);*/
 			math_operator(p->opr.op[0],p->opr.op[1],"Divide");
 			break;
 		case '%':
+			/*fprintf(stderr,%\n);*/
 			math_operator(p->opr.op[0],p->opr.op[1],"Modulo");
 			break;
 		case '<':
+			/*fprintf(stderr,<\n);*/
 			comparison_operator(p->opr.op[0],p->opr.op[1],"Less");
 			break;
 		case '>':
+			/*fprintf(stderr,>\n);*/
 			comparison_operator(p->opr.op[0],p->opr.op[1],"Greater");
 			break;
 		case NE:
+			/*fprintf(stderr,!=\n);*/
 			comparison_operator(p->opr.op[0],p->opr.op[1],"Equal");
-			push_asm_statement("I_Minus",0);//negation
+			push_asm_statement(I_Minus,0);//negation
 			break;
 		case EQ:    
+			/*fprintf(stderr,==\n);*/
 			comparison_operator(p->opr.op[0],p->opr.op[1],"Equal");
 			break;
 		case GE:
+			/*fprintf(stderr,>=\n);*/
 			math_operator(p->opr.op[0],p->opr.op[1],"Subtract");
 			type1 = pop_type();
-			
-			if( type1 == typeIntCon ){
-				strcpy(tmp_str,"I_");		
-			}else{
-				strcpy(tmp_str,"R_");
-			}
 
 			//check if (op0-op1)+1 > 0
-			strcpy(tmp_str2,tmp_str);
-			strcat(tmp_str2,"Constant");
-			push_asm_statement(tmp_str2,1,"value:1");
+			push_asm_statement(get_op(type1,"Constant"),2,0,1);
 			
-			strcpy(tmp_str2,tmp_str);
-			strcat(tmp_str2,"Add");
-			push_asm_statement(tmp_str2,0);
+			push_asm_statement(get_op(type1,"Add"),0);
 
-			strcpy(tmp_str2,tmp_str);
-			strcat(tmp_str2,"Constant");
-			push_asm_statement(tmp_str2,1,"value:0");
+			push_asm_statement(get_op(type1,"Constant"),2,0,0);
 
-			strcpy(tmp_str2,tmp_str);
-			strcat(tmp_str2,"Greater");
-			push_asm_statement(tmp_str2,0);
+			push_asm_statement(get_op(type1,"Greater"),0);
 
 			push_type(typeIntCon);
 
 			break;
 		case LE:
+			/*fprintf(stderr,<=\n);*/
 			math_operator(p->opr.op[0],p->opr.op[1],"Subtract");
 			type1 = pop_type();
 			
-			if( type1 == typeIntCon ){
-				strcpy(tmp_str,"I_");		
-			}else{
-				strcpy(tmp_str,"R_");
-			}
-
 			//check if (op0-op1)-1 < 0
-			strcpy(tmp_str2,tmp_str);
-			strcat(tmp_str2,"Constant");
-			push_asm_statement(tmp_str2,1,"value:1");
+			push_asm_statement(get_op(type1,"Constant"),2,0,1);
 			
-			strcpy(tmp_str2,tmp_str);
-			strcat(tmp_str2,"Subtract");
-			push_asm_statement(tmp_str2,0);
+			push_asm_statement(get_op(type1,"Subtract"),0);
 
-			strcpy(tmp_str2,tmp_str);
-			strcat(tmp_str2,"Constant");
-			push_asm_statement(tmp_str2,1,"value:0");
+			push_asm_statement(get_op(type1,"Constant"),2,0,0);
 
-			strcpy(tmp_str2,tmp_str);
-			strcat(tmp_str2,"Less");
-			push_asm_statement(tmp_str2,0);
+			push_asm_statement(get_op(type1,"Less"),0);
 
 			push_type(typeIntCon);
 
 			break;		
 		case ';':
+			/*fprintf(stderr,;\n);*/
 			if (p->opr.nops == 2) {
 				ex(p->opr.op[0]);
 				ex(p->opr.op[1]);
 			}
 			break;
 		case 'P':
+			/*fprintf(stderr,Param\n);*/
 			i = (-1 * proc_vars) + -2;
 
 			if( p->opr.op[1]->iCon.value == typeFloatId ){
 				last_proc->params[proc_vars] = typeFloatId;
-				push_asm_statement("R_Variable",2,"0",iargs(proc_vars + 3));
-				push_asm_statement("R_Variable",2,"0",iargs(i));
-				push_asm_statement("R_Value",0);
-				push_asm_statement("R_Assign",1,"1");
+				push_asm_statement(R_Variable,4,0,0,0,proc_vars + 3);
+				push_asm_statement(R_Variable,4,0,0,0,i);
+				push_asm_statement(R_Value,0);
+				push_asm_statement(R_Assign,2,0,1);
 			}else{
 				last_proc->params[proc_vars] = typeIntId;
-				push_asm_statement("I_Variable",2,"0",iargs(proc_vars + 3));
-				push_asm_statement("I_Variable",2,"0",iargs(i));
-				push_asm_statement("I_Value",0);
-				push_asm_statement("I_Assign",1,"1");
+				push_asm_statement(I_Variable,4,0,0,0,proc_vars + 3);
+				push_asm_statement(I_Variable,4,0,0,0,i);
+				push_asm_statement(I_Value,0);
+				push_asm_statement(I_Assign,2,0,1);
 			}
 			proc_vars += 1;
+			break;
 		case 'D':   
+			/*fprintf(stderr,Definition\n);*/
 			if(inside_proc == 0){
 				prog_vars += 1;	
 			}else{
 				proc_vars += 1;
 			}
+
+			if( p->opr.op[1] != NULL ){
+				/*fprintf(stderr,Definition with assignment\n);*/
+				assignment(p->opr.op[0],p->opr.op[1]);
+			}
 			break;
 		case 'c':
+			/*fprintf(stderr,Comment\n);*/
 			break;
 		default:
+			/*fprintf(stderr,Throwaway\n);*/
 			break;
 		}
     }
@@ -499,7 +521,7 @@ int ex(nodeType *p) {
 void push_type(int t){
 	struct type_stack * new = (struct type_stack *)malloc(sizeof(struct type_stack));
 
-	//fprintf(stderr,"Pushing type %d\n", t);
+	///*fprintf(stderr,Pushing type %d\n, t);*/
 
 	new->type = t;
 	new->previous = top_of_stack;
@@ -516,16 +538,8 @@ int pop_type(){
 		//free(top_of_stack);
 		top_of_stack = new_top;
 	}
-	//fprintf(stderr,"Popping %d\n", ret);
+	///*fprintf(stderr,Popping %d\n, ret);*/
 	return ret;
-}
-
-void printTypeStack(){
-	struct type_stack * current = top_of_stack;
-	while(current != NULL){
-		printf("\t%d\n",current->type);
-		current = current->previous;
-	}
 }
 
 struct proc * get_proc(int proc_id){
@@ -547,26 +561,36 @@ int get_proc_start(int proc_id){
 	}
 }
 
-struct statement * push_asm_statement(char* cmd, int argc, ...){
+void push_asm_statement(int cmd, int argc, ...){
 	va_list args;
 	int i;
-	char * arg_ptr;
+	int iarg;
+	float farg;
 	struct statement * new_stmt = (struct statement *)malloc(sizeof(struct statement));
-	char str[MAX_STMT_LEN];
-
-
-	new_stmt->string = (char *)malloc(sizeof(char[MAX_STMT_LEN]));
+	
 	//print cmd
-	snprintf(str,MAX_STMT_LEN,"%s\t",cmd);
+	new_stmt->cmd = cmd;
+	new_stmt->argc = argc;
+	new_stmt->i_or_f = (int*)malloc(sizeof(int[argc]));
+	new_stmt->iargs = (int*)malloc(sizeof(int[argc]));
+	new_stmt->fargs = (float*)malloc(sizeof(float[argc]));
+
 	va_start(args, argc);
 	for(i = 0; i < argc; i++){
-		arg_ptr = va_arg( args , char*);
-		snprintf(str+strlen(str),MAX_STMT_LEN-strlen(str),"%s\t",  arg_ptr);
-		strcat(new_stmt->string,str);
+		iarg = va_arg(args , int);
+		if( iarg == 0 ){
+			iarg = va_arg( args , int);
+			i++;
+			new_stmt->i_or_f[i] = 0; 
+			new_stmt->iargs[i] = iarg;
+		}else{
+			farg = (float)va_arg(args, double);
+			i++;
+			new_stmt->i_or_f[i] = 1; 
+			new_stmt->fargs[i] = farg;
+		}
 	}
 	va_end(args);
-	
-	strcpy(new_stmt->string,str);
 	
 	new_stmt->position = pos;
 	new_stmt->next_statement = NULL;
@@ -582,14 +606,14 @@ struct statement * push_asm_statement(char* cmd, int argc, ...){
 	//inc pos
 	pos += argc + 1;
 	
-	//fprintf(stderr,"%s\n",new_stmt->string);
+	/*fprintf(stderr,%s\n,new_stmt->string);*/
 }
 
-void replace_asm_statement(int position, char* cmd, int argc, ...){
+void replace_asm_statement(int position, int cmd, int argc, ...){
 	va_list args;
 	int i;
-	char * arg_ptr;
-	char str[MAX_STMT_LEN];
+	int iarg;
+	float farg;
 	struct statement * current = first_statement;
 
 	while(current->position != position){
@@ -597,25 +621,34 @@ void replace_asm_statement(int position, char* cmd, int argc, ...){
 	}
 
 	//print cmd
-	current->string = (char *)malloc(sizeof(char[MAX_STMT_LEN]));
-	//print cmd
-	snprintf(str,MAX_STMT_LEN,"%s\t",cmd);
+	current->argc = argc;
+	current->cmd = cmd;
+	current->i_or_f = (int*)malloc(sizeof(int[argc]));
+	current->iargs = (int*)malloc(sizeof(int[argc]));
+	current->fargs = (float*)malloc(sizeof(float[argc]));
+
 	va_start(args, argc);
-	for(i = 0; i < argc; i++){
-		arg_ptr = va_arg( args , char*);
-		snprintf(str+strlen(str),MAX_STMT_LEN-strlen(str),"%s\t",  arg_ptr);
-		strcat(current->string,str);
+	for(i = 0; i < argc; i+=2){
+		iarg = va_arg( args , int);
+		if( iarg == 0 ){
+			iarg = va_arg( args , int);
+			current->i_or_f[i] = 0; 
+			current->iargs[i] = iarg;
+		}else{
+			farg = (float)va_arg(args, double);
+			current->i_or_f[i] = 1; 
+			current->fargs[i] = farg;
+		}
 	}
 	va_end(args);
-	
-	strcpy(current->string,str);
 }
 
 //Don't use this if there are Jumps following the position.
-void insert_asm_statement(int position, char* cmd, int argc, ...){
+void insert_asm_statement(int position, int cmd, int argc, ...){
 	va_list args;
 	int i;
-	char * arg_ptr;
+	int iarg;
+	float farg;
 	char str[MAX_STMT_LEN];
 	struct statement * previous;
 	struct statement * current = first_statement;
@@ -624,7 +657,7 @@ void insert_asm_statement(int position, char* cmd, int argc, ...){
 	
 	while(current->position != position){
 		current = current->next_statement;
-		//fprintf(stderr,"Current position %d, looking for %d\n",current->position,position);
+		///*fprintf(stderr,Current position %d, looking for %d\n,current->position,position);*/
 	}
 
 	//inserting after given position
@@ -633,18 +666,26 @@ void insert_asm_statement(int position, char* cmd, int argc, ...){
 	new_stmt->position = current->position;
 
 	//print cmd
-	new_stmt->string = (char *)malloc(sizeof(char[MAX_STMT_LEN]));
-	//print cmd
-	snprintf(str,MAX_STMT_LEN,"%s\t",cmd);
+	new_stmt->cmd = cmd;
+	new_stmt->argc = argc;
+	new_stmt->i_or_f = (int*)malloc(sizeof(int[argc]));
+	new_stmt->iargs = (int*)malloc(sizeof(int[argc]));
+	new_stmt->fargs = (float*)malloc(sizeof(float[argc]));
+
 	va_start(args, argc);
-	for(i = 0; i < argc; i++){
-		arg_ptr = va_arg( args , char*);
-		snprintf(str+strlen(str),MAX_STMT_LEN-strlen(str),"%s\t",  arg_ptr);
-		strcat(new_stmt->string,str);
+	for(i = 0; i < argc; i+=2){
+		iarg = va_arg( args , int);
+		if( iarg == 0 ){
+			iarg = va_arg( args , int);
+			new_stmt->i_or_f[i] = 0; 
+			new_stmt->iargs[i] = iarg;
+		}else{
+			farg = (float)va_arg( args , double);
+			new_stmt->i_or_f[i] = 1; 
+			new_stmt->fargs[i] = farg;
+		}
 	}
 	va_end(args);
-	
-	strcpy(new_stmt->string,str);
 
 	previous->next_statement = new_stmt;
 	new_stmt->next_statement = current;
@@ -662,22 +703,23 @@ void insert_asm_statement(int position, char* cmd, int argc, ...){
 
 }
 
-char* iargs( int i ){
-	char * new_str = (char*)malloc(sizeof(char[20]));
-	sprintf(new_str,"%d",i);
-	return new_str;
-}
-
-char* fargs( float f ){
-	char * new_str = (char*)malloc(sizeof(char[20]));
-	sprintf(new_str,"%f",f);
-	return new_str;
-}
-
 void print_all(){
+	int i;
 	struct statement * current = first_statement;
+	FILE * output_file;
+	output_file = fopen("calc_out.apm","w");
+
 	while(current != NULL){
-		printf("%04d\t%s\n", current->position,current->string);
+		fwrite(&(current->cmd),sizeof(int),1,output_file);
+		
+		for(i = 0; i < current->argc; i++){
+			if(current->i_or_f[i] == 0){
+				fwrite(&(current->iargs[i]),sizeof(int),1,output_file);
+			}else{
+				fwrite(&(current->fargs[i]),sizeof(float),1,output_file);
+			}
+		}
+
 		current = current->next_statement;
 	}
 }
@@ -693,21 +735,13 @@ void comparison_operator(nodeType* op1, nodeType* op2, char* name){
 	get_values_and_convert(&type1, &type2,insert_at);
 
 	int is_real = is_real_op(type1,type2);
-	
-	if(is_real == 1){
-		strcpy(prefix,"R_");
-	}else{
-		strcpy(prefix,"I_");
-	}
-	strcat(prefix,name);
-
-	push_asm_statement(prefix,0);
+	push_asm_statement(get_op(is_real,name),0);
 	push_type(typeIntCon);
 }
 
 void math_operator(nodeType* op1, nodeType* op2, char* name){
 	int insert_at = pos;
-	//fprintf(stderr,"Insert at %d\n",insert_at);
+	///*fprintf(stderr,Insert at %d\n,insert_at);*/
 	ex(op1);
 	int type1 = pop_type();
 
@@ -716,19 +750,9 @@ void math_operator(nodeType* op1, nodeType* op2, char* name){
 	char prefix[30];
 
 	get_values_and_convert(&type1, &type2,insert_at);
-
+	
 	int is_real = is_real_op(type1,type2);
-
-	if(is_real == 1){
-		strcpy(prefix,"R_");
-		push_type(typeFloatCon);
-	}else{
-		strcpy(prefix,"I_");
-		push_type(typeIntCon);
-	}
-	strcat(prefix,name);
-
-	push_asm_statement(prefix,0);
+	push_asm_statement(get_op(is_real,name),0);
 }
 
 
@@ -747,16 +771,16 @@ void math_assignment(nodeType* var, nodeType* expr, char* name){
 	}
 	if( type == typeIntId ){
 		if(is_real_type == 1){
-			push_asm_statement("R_To_I",0);
+			push_asm_statement(R_To_I,0);
 		}
-		push_asm_statement("I_Assign",1,"1");
+		push_asm_statement(I_Assign,2,0,1);
 	}else if( type == typeFloatId ){
 		if(is_real_type == 0){
-			push_asm_statement("I_To_R",0);
+			push_asm_statement(I_To_R,0);
 		}
-		push_asm_statement("R_Assign",1,"1");
+		push_asm_statement(R_Assign,2,0,1);
 	}else{
-		printf("Cannot assign value to constant\n");
+		yyerror("Cannot assign value to constant\n");
 		exit(1);
 	}
 }
@@ -769,54 +793,54 @@ void assignment(nodeType* var, nodeType* expr){
 	int type2 = pop_type();
 
 	if( type2 == typeIntId ){
-		push_asm_statement("I_Value",0);
+		push_asm_statement(I_Value,0);
 		type2 = typeIntCon;
 	}else if( type2 == typeFloatId ){
-		push_asm_statement("R_Value",0);
+		push_asm_statement(R_Value,0);
 		type2 = typeFloatCon;
 	}
 
 	if( type1 == typeIntId ){
 		if(type2 == typeFloatCon){
-			push_asm_statement("R_To_I",0);
+			push_asm_statement(R_To_I,0);
 		}
-		push_asm_statement("I_Assign",1,"1");
+		push_asm_statement(I_Assign,2,0,1);
 	}else if( type1 == typeFloatId ){
 		if(type2 == typeIntCon){
-			push_asm_statement("I_To_R",0);
+			push_asm_statement(I_To_R,0);
 		}
-		push_asm_statement("R_Assign",1,"1");
+		push_asm_statement(R_Assign,2,0,1);
 	}else{
-		printf("Cannot assign value to constant\n");
+		yyerror("Cannot assign value to constant\n");
 		exit(1);
 	}
 }
 
 void get_values_and_convert(int *type1, int *type2, int insert_at){
-	//fprintf(stderr,"Insert at %d\n",insert_at);
+	///*fprintf(stderr,Insert at %d\n,insert_at);*/
 	if( *type1 == typeIntId ){
-		insert_asm_statement(insert_at,"I_Value",0);
+		insert_asm_statement(insert_at,I_Value,0);
 		*type1 = typeIntCon;
 		insert_at += 3;
 
 		if(*type2 == typeFloatId || *type2 == typeFloatCon){
-			insert_asm_statement(insert_at,"I_To_R",0);
+			insert_asm_statement(insert_at,I_To_R,0);
 			*type1 = typeFloatCon;
 		}
 	}else if( *type1 == typeFloatId ){
-		push_asm_statement("R_Value",0);
+		push_asm_statement(R_Value,0);
 		*type1 = typeFloatCon;
 	}
 
 	if( *type2 == typeIntId ){
-		push_asm_statement("I_Value",0);
+		push_asm_statement(I_Value,0);
 		*type2 = typeIntCon;
 		if(*type1 == typeFloatId || *type1 == typeFloatCon){
-			push_asm_statement("I_To_R",0);
+			push_asm_statement(I_To_R,0);
 			*type2 = typeFloatCon;
 		}
 	}else if( *type2 == typeFloatId ){
-		push_asm_statement("R_Value",0);
+		push_asm_statement(R_Value,0);
 		*type2 = typeFloatCon;
 	}
 }
@@ -828,27 +852,132 @@ int is_real_op(int type1, int type2){
 		return 0;
 	}
 }
-/*
-void check_arguments(struct proc * p){
-	int i = 0;
-	while( args != 0 ){
-		int type = pop_type();
-		if( p->params[i] != type ){
-			if( p->params[i] == typeIntId ){
-				if( type == typeFloatId ){
-					//convert
-				}
-			}else if(p->params[i] == typeFloatId){
-				if( type == typeIntId ){
-					//convert
-				}
-			}else{
-				yyerror("mis matched types");
-				exit(1);
-			}
+
+int get_op(int real, char* name){
+	//#define I_Add		1
+	//#define R_Add		31
+	if(strcmp(name,"Add") == 0){
+		if(real == 0){
+			return I_Add;
+		}else{
+			return R_Add;
 		}
-		args = args - 1;
-		i = i + 1;
+	}
+	//#define I_Assign	4
+	//#define R_Assign	34
+	if(strcmp(name,"Assign") == 0){
+		if(real == 0){
+			return I_Assign;
+		}else{
+			return R_Assign;
+		}
+	}
+	//#define I_Constant	7
+	//#define R_Constant	37
+	if(strcmp(name,"Constant") == 0){
+		if(real == 0){
+			return I_Constant;
+		}else{
+			return R_Constant;
+		}
+	}
+	//#define I_Divide	8
+	//#define R_Divide	38
+	if(strcmp(name,"Divide") == 0){
+		if(real == 0){
+			return I_Divide;
+		}else{
+			return R_Divide;
+		}
+	}
+	//#define I_Equal		11
+	//#define R_Equal		41
+	if(strcmp(name,"Equal") == 0){
+		if(real == 0){
+			return I_Equal;
+		}else{
+			return R_Equal;
+		}
+	}
+	//#define I_Greater	13
+	//#define R_Greater	43
+	if(strcmp(name,"Greater") == 0){
+		if(real == 0){
+			return I_Greater;
+		}else{
+			return R_Greater;
+		}
+	}
+	//#define I_Less		15
+	//#define R_Less		45
+	if(strcmp(name,"Less") == 0){
+		if(real == 0){
+			return I_Less;
+		}else{
+			return R_Less;
+		}
+	}
+	//#define I_Minus		16
+	//#define R_Minus		46
+	if(strcmp(name,"Minus") == 0){
+		if(real == 0){
+			return I_Minus;
+		}else{
+			return R_Minus;
+		}
+	}
+	//#define I_Multiply	18
+	//#define R_Multiply	48
+	if(strcmp(name,"Multiply") == 0){
+		if(real == 0){
+			return I_Multiply;
+		}else{
+			return R_Multiply;
+		}
+	}
+	//#define I_Read		23
+	//#define R_Read		53
+	if(strcmp(name,"Read") == 0){
+		if(real == 0){
+			return I_Read;
+		}else{
+			return R_Read;
+		}
+	}
+	//#define I_Subtract	24
+	//#define R_Subtract	54
+	if(strcmp(name,"Subtract") == 0){
+		if(real == 0){
+			return I_Subtract;
+		}else{
+			return R_Subtract;
+		}
+	}
+	//#define I_Value		25
+	//#define R_Value		55
+	if(strcmp(name,"Value") == 0){
+		if(real == 0){
+			return I_Value;
+		}else{
+			return R_Value;
+		}
+	}
+	//#define I_Variable	26
+	//#define R_Variable	56
+	if(strcmp(name,"Variable") == 0){
+		if(real == 0){
+			return I_Variable;
+		}else{
+			return R_Variable;
+		}
+	}
+	//#define I_Write		27
+	//#define R_Write		57
+	if(strcmp(name,"Write") == 0){
+		if(real == 0){
+			return I_Write;
+		}else{
+			return R_Write;
+		}
 	}
 }
-*/

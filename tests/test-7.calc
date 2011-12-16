@@ -1,0 +1,20 @@
+/**
+ *  This test will go through nested
+ *  for loops.
+ */
+int h, i, j, k;
+int upto=10, nop;
+for( h=0 step 1 to upto )
+{
+  for ( i=0 step 1 to upto )
+  {
+    for ( j=0 step 1 to upto )
+    {
+      for ( k = 0 step 1 to upto )
+      {
+        nop = h;
+      }
+    }
+  }
+}
+print nop;

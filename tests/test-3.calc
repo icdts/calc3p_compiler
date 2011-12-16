@@ -1,0 +1,8 @@
+/**
+ *  This test shows that type checking works
+ */
+
+int i;
+float k;
+
+print i+k; // ERROR, you are a giddy goat!

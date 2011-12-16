@@ -14,8 +14,8 @@ CC = gcc
 # Flags to use for both compiling and linking.
 # See the top of symbtable.h for information on -DUSE_HASH_MAP
 # and -DUSE_EXT_HASH_MAP.
-CXXFLAGS = -g -Wall -pedantic
-CFLAGS = -g -Wall -pedantic
+CXXFLAGS = -g -pedantic
+CFLAGS = -g -pedantic
 
 # Flags that should be used for linking, but not for compiling.
 LDFLAGS =
@@ -37,16 +37,16 @@ apd: apd.c $(PSTHEADS)
 apm: $(PSTOBJS)
 	$(CC) $(CFLAGS) $(PSTOBJS) -o $@ $(LDFLAGS) $(LIBS)
 
-apm.y.c: apm.y
-	$(YACC) -o apm.y.c $< 
+#apm.y.c: apm.y
+#	$(YACC) -o apm.y.c $< 
 
-apm.y.h: apm.y
-	$(YACC) -o apm.y.c $<
+#apm.y.h: apm.y
+#	$(YACC) -o apm.y.c $<
 
-apm.l.c: apm.l
-	$(LEX) -oapm.l.c.old $<
-	sed -e '/isatty/ d' < apm.l.c.old > apm.l.c
-	-rm apm.l.c.old
+#apm.l.c: apm.l
+#	$(LEX) -oapm.l.c.old $<
+#	sed -e '/isatty/ d' < apm.l.c.old > apm.l.c
+#	-rm apm.l.c.old
 
 clean: mostlyclean
 	-rm -f $(BINS) $(PSTOBJS)

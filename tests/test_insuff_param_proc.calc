@@ -1,0 +1,4 @@
+procedure test1(int a){
+	print a;
+}
+test1();

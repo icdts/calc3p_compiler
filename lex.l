@@ -75,7 +75,7 @@ int current_next_index = 0;
                 return INTEGER;
             }
 
-[-()<>=+*/;{}%.] {
+[-()<>=+*/;{}%.,] {
                 return *yytext;
              }
 

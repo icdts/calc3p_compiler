@@ -5,22 +5,34 @@ int a;
 int b;
 //Assign Constant
 a = 0;
+print a;
 
 //Assign Variable
 b = 1;
+print b;
 
 //Assign Math op of constants
 a = 1 + 2;
+print a;
 a = 6 - 3;
+print a;
 b = 2 * 3;
+print b;
 b = 6 / 2;
+print b;
 b = 15 % 4;
+print b;
 
 //Assign math op of vars
 a = a * b;
+print a;
 
 //Math assignments
 a += b;
+print a;
 a += 1;
+print a;
 a *= b;
+print a;
 a /= b;
+print a;

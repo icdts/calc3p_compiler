@@ -1,0 +1,15 @@
+/**
+ *  This test will see that errors are
+ *  reported correctly when there is a
+ *  syntax error
+ */
+begin
+  int k;
+  k = 4;
+  print k;
+  for ( k=4 step 1 to 10)
+  {
+    print k;
+  //} UH OH! YOU'RE MISSING A CLOSING
+  //  BRACKET! WHAT WERE YOU THINKING?
+end

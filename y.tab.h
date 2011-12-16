@@ -1,10 +1,8 @@
+/* A Bison parser, made by GNU Bison 2.5.  */
 
-/* A Bison parser, made by GNU Bison 2.4.1.  */
-
-/* Skeleton interface for Bison's Yacc-like parsers in C
+/* Bison interface for Yacc-like parsers in C
    
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+      Copyright (C) 1984, 1989-1990, 2000-2011 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -39,13 +37,80 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     T_WORD = 258,
-     INTEGER = 259,
-     REAL = 260,
-     DATA = 261,
-     UNKNOWN = 262
+     INTEGER = 258,
+     FLOAT = 259,
+     VARIABLE = 260,
+     TYPE = 261,
+     DO = 262,
+     UNTIL = 263,
+     WHILE = 264,
+     IF = 265,
+     PRINT = 266,
+     FOR = 267,
+     STEP = 268,
+     TO = 269,
+     COMMENT = 270,
+     PROG = 271,
+     PROC = 272,
+     FUNC = 273,
+     CALL = 274,
+     ARGS = 275,
+     IFX = 276,
+     ELSE = 277,
+     PROC_STMT = 278,
+     PROC_ARG_STMT = 279,
+     FUNC_STMT = 280,
+     FUNC_ARG_STMT = 281,
+     NE = 282,
+     EQ = 283,
+     LE = 284,
+     GE = 285,
+     ModE = 286,
+     DivE = 287,
+     MulE = 288,
+     MinE = 289,
+     PluE = 290,
+     RETURN = 291,
+     UMINUS = 292
    };
 #endif
+/* Tokens.  */
+#define INTEGER 258
+#define FLOAT 259
+#define VARIABLE 260
+#define TYPE 261
+#define DO 262
+#define UNTIL 263
+#define WHILE 264
+#define IF 265
+#define PRINT 266
+#define FOR 267
+#define STEP 268
+#define TO 269
+#define COMMENT 270
+#define PROG 271
+#define PROC 272
+#define FUNC 273
+#define CALL 274
+#define ARGS 275
+#define IFX 276
+#define ELSE 277
+#define PROC_STMT 278
+#define PROC_ARG_STMT 279
+#define FUNC_STMT 280
+#define FUNC_ARG_STMT 281
+#define NE 282
+#define EQ 283
+#define LE 284
+#define GE 285
+#define ModE 286
+#define DivE 287
+#define MulE 288
+#define MinE 289
+#define PluE 290
+#define RETURN 291
+#define UMINUS 292
+
 
 
 
@@ -53,19 +118,19 @@
 typedef union YYSTYPE
 {
 
-/* Line 1676 of yacc.c  */
-#line 46 "apm.y"
+/* Line 2068 of yacc.c  */
+#line 30 "yacc.y"
 
-	float real;
-	int integer;
-	WORD num;
-	char *word;
-	struct wordList *values;
+    int iValue;                 /* integer value */
+	float fValue;				/* float value */
+    char sIndex;                /* symbol table index */
+	int iType;					/* Type enum */
+    nodeType *nPtr;             /* node pointer */
 
 
 
-/* Line 1676 of yacc.c  */
-#line 69 "apm.y.h"
+/* Line 2068 of yacc.c  */
+#line 134 "y.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

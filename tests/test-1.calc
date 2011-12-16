@@ -1,0 +1,22 @@
+/**
+ *  This program will use Newton's method to estimate the roots of
+ *  f(x) = x^3 - x + 1
+ */
+ float xn;
+ float xo;
+ int num_iterations;
+ xo = -1.0;
+ xn = -1.0;
+ num_iterations = 1;
+
+ /* A do-while loop */
+ do {
+  print xo;
+  xo = xn;
+  xn = xo - ( xo * xo * xo - xo + 1.0 ) / ( 3.0 * xo * xo - 1.0);
+  num_iterations = num_iterations + 1;
+} while ( num_iterations <= 8 )
+
+print xn; // The root found using Newton's method.
+print (xo * xo * xo - xo + 1.0); // Print f(xn), which should be 0.
+
