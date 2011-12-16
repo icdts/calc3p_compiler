@@ -1,0 +1,6 @@
+function float asdf(int a){
+	return a;
+}
+float b;
+b = asdf(1);
+print b;

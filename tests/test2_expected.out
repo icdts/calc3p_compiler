@@ -1,0 +1,63 @@
+0001	Prog	2	4	
+0004	I_Variable	0	3	
+0007	I_Constant	0	
+0009	I_Assign	1	
+0011	I_Variable	0	3	
+0014	I_Value	
+0015	I_Constant	5	
+0016	I_Less	
+0017	Jmp_if_True	32	
+0019	I_Variable	0	3	
+0022	I_Variable	0	3	
+0025	I_Value	
+0026	I_Constant	1	
+0027	I_Add	
+0028	I_Assign	1	
+0030	Jmp	11	
+0032	I_Variable	0	4	
+0035	I_Constant	0	
+0037	I_Assign	1	
+0039	I_Variable	0	4	
+0042	I_Value	
+0043	I_Constant	100	
+0044	I_Less	
+0045	Jmp_if_True	64	
+0047	I_Constant	1	
+0049	I_Write	1	
+0051	I_Variable	0	4	
+0054	I_Variable	0	4	
+0057	I_Value	
+0058	I_Constant	0	
+0059	I_Add	
+0060	I_Assign	1	
+0062	Jmp	39	
+0064	I_Variable	0	4	
+0067	I_Constant	50	
+0069	I_Assign	1	
+0071	I_Variable	0	4	
+0074	I_Variable	0	4	
+0077	I_Value	
+0078	I_Constant	1	
+0079	I_Subtract	
+0080	I_Assign	1	
+0082	I_Variable	0	4	
+0085	I_Value	
+0086	I_Constant	0	
+0087	I_Equal	
+0088	I_Minus	
+0089	Jmp_if_True	91	
+0091	I_Variable	0	4	
+0094	I_Constant	1	
+0096	I_Assign	1	
+0098	I_Variable	0	4	
+0101	I_Variable	0	4	
+0104	I_Value	
+0105	I_Constant	2	
+0106	I_Multiply	
+0107	I_Assign	1	
+0109	I_Variable	0	4	
+0112	I_Value	
+0113	I_Constant	256	
+0114	I_Equal	
+0115	Jmp_if_False	117	
+0117	EndProg	

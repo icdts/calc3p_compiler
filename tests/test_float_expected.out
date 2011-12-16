@@ -1,0 +1,67 @@
+0001	Prog	2	4	
+0004	R_Variable	0	3	
+0007	R_Constant	0.900000	
+0009	R_Assign	1	
+0011	R_Variable	0	4	
+0014	R_Constant	1.200000	
+0016	R_Assign	1	
+0018	R_Variable	0	3	
+0021	R_Constant	1.000000	
+0023	R_Constant	2.700000	
+0025	R_Add	
+0026	R_Assign	1	
+0028	R_Variable	0	3	
+0031	R_Constant	6.400000	
+0033	R_Constant	3.900000	
+0035	R_Subtract	
+0036	R_Assign	1	
+0038	R_Variable	0	4	
+0041	R_Constant	2.300000	
+0043	R_Constant	3.600000	
+0045	R_Multiply	
+0046	R_Assign	1	
+0048	R_Variable	0	4	
+0051	R_Constant	6.200000	
+0053	R_Constant	2.900000	
+0055	R_Divide	
+0056	R_Assign	1	
+0058	R_Variable	0	4	
+0061	R_Constant	15.100000	
+0063	R_Constant	4.100000	
+0065	R_Modulo	
+0066	R_Assign	1	
+0068	R_Variable	0	3	
+0071	R_Variable	0	3	
+0074	R_Variable	0	4	
+0077	R_Value	
+0078	R_Value	
+0079	R_Multiply	
+0080	R_Assign	1	
+0082	R_Variable	0	3	
+0085	R_Variable	0	3	
+0088	R_Variable	0	4	
+0091	R_Value	
+0092	R_Value	
+0093	R_Add	
+0094	R_Assign	1	
+0096	R_Variable	0	3	
+0099	R_Variable	0	3	
+0102	R_Constant	1.000000	
+0104	R_Value	
+0105	R_Add	
+0106	R_Assign	1	
+0108	R_Variable	0	3	
+0111	R_Variable	0	3	
+0114	R_Variable	0	4	
+0117	R_Value	
+0118	R_Value	
+0119	R_Multiply	
+0120	R_Assign	1	
+0122	R_Variable	0	3	
+0125	R_Variable	0	3	
+0128	R_Variable	0	4	
+0131	R_Value	
+0132	R_Value	
+0133	R_Divide	
+0134	R_Assign	1	
+0136	EndProg	

@@ -108,8 +108,6 @@ stmt:
         | IF '(' expr ')' stmt %prec IFX 							{ $$ = opr(IF, 2, $3, $5); }
         | IF '(' expr ')' stmt ELSE stmt 							{ $$ = opr(IF, 3, $3, $5, $7); }
         | '{' stmt_list '}'											{ $$ = $2; }
-		| VARIABLE '(' ')'											{ $$ = opr(CALL, 2, proc($1), NULL); }
-		| VARIABLE '(' arg_list ')'									{ $$ = opr(CALL, 2, proc($1), $3); }
 		| RETURN expr ';'												{ $$ = opr(RETURN, 1, $2); }
         ;
 arg_list:
@@ -138,6 +136,8 @@ expr:
         | expr NE expr          { $$ = opr(NE, 2, $1, $3); }
         | expr EQ expr          { $$ = opr(EQ, 2, $1, $3); }
         | '(' expr ')'          { $$ = $2; }
+		| VARIABLE '(' ')'		{ $$ = opr(CALL, 2, proc($1), NULL); }
+		| VARIABLE '(' arg_list ')'	{ $$ = opr(CALL, 2, proc($1), $3); }
         ;
 
 %%

@@ -1,5 +1,5 @@
 /*
-	Testing ints.  Declaring, assigning, adding, subtracting, etc
+	Testing ints  Declaring, assigning, adding, subtracting, etc
 */
 int a;
 int b;
@@ -10,7 +10,7 @@ a = 0;
 b = 1;
 
 //Assign Math op of constants
-a = 1 + 1;
+a = 1 + 2;
 a = 6 - 3;
 b = 2 * 3;
 b = 6 / 2;

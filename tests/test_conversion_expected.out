@@ -1,0 +1,44 @@
+0001	Prog	2	4	
+0004	I_Variable	0	3	
+0007	R_Constant	1.000000	
+0009	R_To_I	
+0010	I_Assign	1	
+0012	R_Variable	0	4	
+0015	I_Constant	5	
+0017	I_To_R	
+0018	R_Assign	1	
+0020	I_Variable	0	3	
+0023	I_Variable	0	3	
+0026	I_Value	
+0027	I_To_R	
+0028	R_Variable	0	4	
+0029	R_Value	
+0030	R_Add	
+0031	R_To_I	
+0032	I_Assign	1	
+0034	R_Variable	0	4	
+0037	I_Variable	0	3	
+0040	I_Value	
+0041	I_To_R	
+0042	R_Variable	0	4	
+0043	R_Value	
+0044	R_Add	
+0045	R_Assign	1	
+0047	I_Variable	0	3	
+0050	R_Variable	0	4	
+0053	I_Variable	0	3	
+0056	R_Value	
+0057	I_Value	
+0058	I_To_R	
+0059	R_Multiply	
+0060	R_To_I	
+0061	I_Assign	1	
+0063	R_Variable	0	4	
+0066	R_Variable	0	4	
+0069	I_Variable	0	3	
+0072	R_Value	
+0073	I_Value	
+0074	I_To_R	
+0075	R_Multiply	
+0076	R_Assign	1	
+0078	EndProg	

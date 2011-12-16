@@ -1,0 +1,10 @@
+0001	Prog	1	4	
+0004	I_Variable	0	3	
+0007	I_Constant	1	
+0009	I_Assign	1	
+0011	I_Constant	1	
+0013	I_Write	1	
+0015	I_Variable	0	3	
+0018	I_Value	
+0019	I_Write	1	
+0021	EndProg	

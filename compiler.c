@@ -101,7 +101,7 @@ int ex(nodeType *p) {
 				inside_proc = 0;
 				ex(p->opr.op[2]);
 			}else{
-				fprintf(stderr,"%s\n", "Cannot nest Procedure definitions");
+				yyerror("%s\n", "Cannot nest Procedure definitions");
 				exit(1);
 			}
 			break;
@@ -163,7 +163,7 @@ int ex(nodeType *p) {
 
 				ex(p->opr.op[3]);
 			}else{
-				fprintf(stderr,"%s\n", "Cannot nest Procedure definitions");
+				yyerror("Cannot nest Procedure definitions");
 				exit(1);
 			}
 			break;
@@ -621,8 +621,10 @@ void insert_asm_statement(int position, char* cmd, int argc, ...){
 	struct statement * current = first_statement;
 	struct statement * new_stmt = (struct statement *)malloc(sizeof(struct statement));
 
+	
 	while(current->position != position){
 		current = current->next_statement;
+		//fprintf(stderr,"Current position %d, looking for %d\n",current->position,position);
 	}
 
 	//inserting after given position
@@ -705,6 +707,7 @@ void comparison_operator(nodeType* op1, nodeType* op2, char* name){
 
 void math_operator(nodeType* op1, nodeType* op2, char* name){
 	int insert_at = pos;
+	//fprintf(stderr,"Insert at %d\n",insert_at);
 	ex(op1);
 	int type1 = pop_type();
 
@@ -746,12 +749,12 @@ void math_assignment(nodeType* var, nodeType* expr, char* name){
 		if(is_real_type == 1){
 			push_asm_statement("R_To_I",0);
 		}
-		push_asm_statement("I_Assign",1,"words:1");
+		push_asm_statement("I_Assign",1,"1");
 	}else if( type == typeFloatId ){
 		if(is_real_type == 0){
 			push_asm_statement("I_To_R",0);
 		}
-		push_asm_statement("R_Assign",1,"words:1");
+		push_asm_statement("R_Assign",1,"1");
 	}else{
 		printf("Cannot assign value to constant\n");
 		exit(1);
@@ -777,12 +780,12 @@ void assignment(nodeType* var, nodeType* expr){
 		if(type2 == typeFloatCon){
 			push_asm_statement("R_To_I",0);
 		}
-		push_asm_statement("I_Assign",1,"words:1");
+		push_asm_statement("I_Assign",1,"1");
 	}else if( type1 == typeFloatId ){
 		if(type2 == typeIntCon){
 			push_asm_statement("I_To_R",0);
 		}
-		push_asm_statement("R_Assign",1,"words:1");
+		push_asm_statement("R_Assign",1,"1");
 	}else{
 		printf("Cannot assign value to constant\n");
 		exit(1);
@@ -790,10 +793,11 @@ void assignment(nodeType* var, nodeType* expr){
 }
 
 void get_values_and_convert(int *type1, int *type2, int insert_at){
+	//fprintf(stderr,"Insert at %d\n",insert_at);
 	if( *type1 == typeIntId ){
 		insert_asm_statement(insert_at,"I_Value",0);
 		*type1 = typeIntCon;
-		insert_at += 1;
+		insert_at += 3;
 
 		if(*type2 == typeFloatId || *type2 == typeFloatCon){
 			insert_asm_statement(insert_at,"I_To_R",0);

@@ -1,0 +1,67 @@
+0001	Prog	2	4	
+0004	I_Variable	0	3	
+0007	I_Constant	0	
+0009	I_Assign	1	
+0011	I_Variable	0	4	
+0014	I_Constant	1	
+0016	I_Assign	1	
+0018	I_Variable	0	3	
+0021	I_Constant	1	
+0023	I_Constant	2	
+0025	I_Add	
+0026	I_Assign	1	
+0028	I_Variable	0	3	
+0031	I_Constant	6	
+0033	I_Constant	3	
+0035	I_Subtract	
+0036	I_Assign	1	
+0038	I_Variable	0	4	
+0041	I_Constant	2	
+0043	I_Constant	3	
+0045	I_Multiply	
+0046	I_Assign	1	
+0048	I_Variable	0	4	
+0051	I_Constant	6	
+0053	I_Constant	2	
+0055	I_Divide	
+0056	I_Assign	1	
+0058	I_Variable	0	4	
+0061	I_Constant	15	
+0063	I_Constant	4	
+0065	I_Modulo	
+0066	I_Assign	1	
+0068	I_Variable	0	3	
+0071	I_Variable	0	3	
+0074	I_Value	
+0075	I_Variable	0	4	
+0077	I_Value	
+0078	I_Multiply	
+0079	I_Assign	1	
+0081	I_Variable	0	3	
+0084	I_Variable	0	3	
+0087	I_Value	
+0088	I_Variable	0	4	
+0090	I_Value	
+0091	I_Add	
+0092	I_Assign	1	
+0094	I_Variable	0	3	
+0097	I_Variable	0	3	
+0100	I_Value	
+0101	I_Constant	1	
+0102	I_Add	
+0103	I_Assign	1	
+0105	I_Variable	0	3	
+0108	I_Variable	0	3	
+0111	I_Value	
+0112	I_Variable	0	4	
+0114	I_Value	
+0115	I_Multiply	
+0116	I_Assign	1	
+0118	I_Variable	0	3	
+0121	I_Variable	0	3	
+0124	I_Value	
+0125	I_Variable	0	4	
+0127	I_Value	
+0128	I_Divide	
+0129	I_Assign	1	
+0131	EndProg	

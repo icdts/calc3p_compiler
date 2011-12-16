@@ -1,0 +1,62 @@
+0001	Prog	2	4	
+0004	I_Variable	0	3	
+0007	I_Constant	0	
+0009	I_Assign	1	
+0011	I_Variable	0	3	
+0014	R_Constant	1.500000	
+0016	R_To_I	
+0017	I_Assign	1	
+0019	I_Variable	0	3	
+0022	I_Value	
+0023	I_Constant	1	
+0024	I_Greater	
+0025	Jmp_if_False	37	
+0027	I_Variable	0	3	
+0030	I_Value	
+0031	I_Write	1	
+0033	I_Constant	1	
+0035	I_Write	1	
+0037	R_Variable	0	4	
+0040	I_Constant	0	
+0042	I_To_R	
+0043	R_Assign	1	
+0045	R_Variable	0	4	
+0048	R_Constant	2.500000	
+0050	R_Assign	1	
+0052	R_Variable	0	4	
+0055	I_Variable	0	3	
+0058	R_Value	
+0059	I_Value	
+0060	I_To_R	
+0061	R_Less	
+0062	Jmp	78	
+0064	R_Variable	0	4	
+0067	R_Value	
+0068	R_Write	1	
+0070	Jmp	null	
+0072	I_Variable	0	3	
+0075	I_Value	
+0076	I_Write	1	
+0078	R_Variable	0	4	
+0081	I_Variable	0	3	
+0084	R_Value	
+0085	I_Value	
+0086	I_To_R	
+0087	R_Subtract	
+0088	R_Constant	value:1	
+0090	R_Add	
+0091	R_Constant	value:0	
+0093	R_Greater	
+0094	I_Write	1	
+0096	R_Variable	0	4	
+0099	I_Variable	0	3	
+0102	R_Value	
+0103	I_Value	
+0104	I_To_R	
+0105	R_Subtract	
+0106	R_Constant	value:1	
+0108	R_Subtract	
+0109	R_Constant	value:0	
+0111	R_Less	
+0112	I_Write	1	
+0114	EndProg	

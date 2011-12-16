@@ -1,0 +1,7 @@
+0001	Prog	0	15	
+0004	Proc	0	7	
+0007	I_Constant	1	
+0009	I_Variable	0	-3	
+0012	I_Write	1	
+0014	EndProc	
+0015	EndProg	

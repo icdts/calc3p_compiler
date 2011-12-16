@@ -1,0 +1,13 @@
+/*
+	Compiler should automatically convert values.
+*/
+int a;
+float b;
+a = 1.0;
+b = 5;
+
+a = a + b;
+b = a + b;
+
+a = b * a;
+b = b * a;

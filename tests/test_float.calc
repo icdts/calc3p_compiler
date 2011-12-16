@@ -1,0 +1,26 @@
+/*
+	Testing floats.  Declaring, assigning, adding, subtracting, etc
+*/
+float a;
+float b;
+//Assign Constant
+a = 0.9;
+
+//Assign Variable
+b = 1.2;
+
+//Assign Math op of constants
+a = 1.0 + 2.7;
+a = 6.4 - 3.9;
+b = 2.3 * 3.6;
+b = 6.2 / 2.9;
+b = 15.1 % 4.1;
+
+//Assign math op of vars
+a = a * b;
+
+//Math assignments
+a += b;
+a += 1.0;
+a *= b;
+a /= b;
